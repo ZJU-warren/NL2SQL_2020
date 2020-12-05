@@ -14,8 +14,6 @@ raw_schema_link = raw_folder_link + '/db_schema.json'
 # --------------------------- main files -----------------------
 X_link = main_folder_link + '/X'
 
-
-
 # --------------------------- others ---------------------------
 pre_train_model_path = "../Bert"
 config_path = pre_train_model_path + '/bert_config.json'

@@ -7,10 +7,21 @@ import pandas as pd
 import os
 import DataLinkSet as DLSet
 from transformers import BertTokenizer
+import shutil
 
 
 class DataPreprocessor:
     tokenizer = BertTokenizer.from_pretrained(DLSet.vocab_path)
+
+    @staticmethod
+    def col_map(col):
+        if col == -999:
+            target = 0
+        elif col == -1:
+            target = 1
+        else:
+            target = col + 1
+        return target
 
     @staticmethod
     def preprocess(data_source: str, cheat_mode: bool = True):
@@ -20,7 +31,7 @@ class DataPreprocessor:
         :param cheat_mode: whether the data source contains ground truth.
         :return: None
         """
-        print('-' * 20 + ' preprocess %s ' % data_source + '-' * 20)
+        print('\n' + '*' * 20 + ' preprocess %s ' % data_source + '*' * 20)
 
         # load raw data
         with open(DLSet.raw_data_link % data_source, 'r') as f:
@@ -30,8 +41,13 @@ class DataPreprocessor:
         with open(DLSet.raw_schema_link % data_source, 'r') as f:
             schema = json.load(f)
 
+        # clear the folder and generate new one
+        if os.path.exists(DLSet.main_folder_link % data_source):
+            shutil.rmtree(DLSet.main_folder_link % data_source)
+        os.makedirs(DLSet.main_folder_link % data_source)
+
         # generate X after tokenizer
-        # DataPreprocessor.__generate_X(data, content, schema, DLSet.X_link % data_source)
+        DataPreprocessor.__generate_X(data, content, schema, DLSet.X_link % data_source)
 
         # in cheat mode, the ground truth should be format as y
         if cheat_mode is False:
@@ -90,6 +106,9 @@ class DataPreprocessor:
         :param store_link: the location to store the result.
         :return: None
         """
+
+        print('-------------------- generate X --------------------')
+
         # 1. get the toString information of each database
         db_info = DataPreprocessor.__generate_db_info(schema)
 
@@ -204,12 +223,16 @@ class DataPreprocessor:
         :return: None
         """
 
-        # DataPreprocessor.__generate_y_select(data, content, schema, store_folder + '/Select')
-        # DataPreprocessor.__generate_y_from(data, content, schema, store_folder + '/From')
+        print('-------------------- generate y --------------------')
+
+        DataPreprocessor.__generate_y_select(data, content, schema, store_folder + '/Select')
+        DataPreprocessor.__generate_y_from(data, content, schema, store_folder + '/From')
         DataPreprocessor.__generate_y_where(data, content, schema, store_folder + '/Where')
-        # DataPreprocessor.__generate_y_order_by(data, content, schema, store_folder)
-        # DataPreprocessor.__generate_y_group_by(data, content, schema, store_folder)
-        # DataPreprocessor.__generate_y_combination(data, content, schema, store_folder)
+        DataPreprocessor.__generate_y_group_by(data, content, schema, store_folder + '/GroupBy')
+        DataPreprocessor.__generate_y_having(data, content, schema, store_folder + '/Having')
+        DataPreprocessor.__generate_y_limit(data, content, schema, store_folder + '/Limit')
+        DataPreprocessor.__generate_y_order_by(data, content, schema, store_folder + '/GroupBy')
+        DataPreprocessor.__generate_y_combination(data, content, schema, store_folder + '/Combination')
 
     @staticmethod
     def __filter(raw_data: list):
@@ -303,6 +326,12 @@ class DataPreprocessor:
             with open(store_folder + '/suffix', 'w') as f:
                 f.write(json.dumps(y_suffix, ensure_ascii=False, indent=4, separators=(',', ':')))
 
+        # 0.
+        print('-------------------- generate select part--------------------')
+        if os.path.exists(store_folder):
+            shutil.rmtree(store_folder)
+        os.makedirs(store_folder)
+
         # 1. filter the wrong data
         data = DataPreprocessor.__filter(raw_data)
         total = len(data)
@@ -349,14 +378,17 @@ class DataPreprocessor:
                 X_gt_sup_prefix['X_id'].append(i)
                 X_gt_sup_prefix['N'].append(n)
 
-                target = []
+                targets = []
                 for _ in data[i]['sql']['from']['conds']:
                     if type(_) == list:
-                        target.append(_[0])
+                        prefix = DataPreprocessor.col_map(_[0])
+                        targets.append(prefix)
+
                         X_gt_sup_suffix['X_id'].append(i)
-                        X_gt_sup_suffix['prefix'].append(_[0])
-                        y_gt_suffix['suffix'].append(_[5])
-                y_gt_prefix['prefix'].append(target)
+                        X_gt_sup_suffix['prefix'].append(prefix)
+                        y_gt_suffix['suffix'].append(DataPreprocessor.col_map(_[5]))
+
+                y_gt_prefix['prefix'].append(targets)
 
             with open(store_folder + '/X_gt_sup_N', 'w') as f:
                 f.write(json.dumps(X_gt_sup_N, ensure_ascii=False, indent=4, separators=(',', ':')))
@@ -406,8 +438,6 @@ class DataPreprocessor:
                 if J != 0:
                     X_gt_sup_tables['X_id'].append(i)
                     y_gt_tables['tables'].append(target_tables)
-                    if J > 1:
-                        print(J, target_tables)
 
                 # sqls
                 else:
@@ -431,6 +461,12 @@ class DataPreprocessor:
                 f.write(json.dumps(X_gt_sup_sqls, ensure_ascii=False, indent=4, separators=(',', ':')))
             with open(store_folder + '/y_gt_sqls', 'w') as f:
                 f.write(json.dumps(y_gt_sqls, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+        # 0.
+        print('-------------------- generate from part--------------------')
+        if os.path.exists(store_folder):
+            shutil.rmtree(store_folder)
+        os.makedirs(store_folder)
 
         # 1. filter the wrong data
         data = DataPreprocessor.__filter(raw_data)
@@ -493,22 +529,22 @@ class DataPreprocessor:
                 # operation
                 if N == 2:
                     X_gt_sup_operation['X_id'].append(i)
-                    y_gt_operation['operation'].append(data[i]['sql']['where'][1])
+                    y_gt_operation['operation'].append(0 if data[i]['sql']['where'][1] == 'AND' else 1)
 
                 # prefix, com, value and suffix
-                prefix = []
-
+                targets = []
                 for _ in data[i]['sql']['where']:
                     if type(_) == list:
                         # prefix
-                        prefix.append(_[0])
+                        prefix = DataPreprocessor.col_map(_[0])
+                        targets.append(prefix)
 
                         # agg is default 0
 
                         # eq
                         if True:
                             X_gt_sup_eq['X_id'].append(i)
-                            X_gt_sup_eq['prefix'].append(_[0])
+                            X_gt_sup_eq['prefix'].append(prefix)
                             y_gt_eq['eq'].append(_[2])
 
                         # # value
@@ -521,23 +557,24 @@ class DataPreprocessor:
 
                         # com
                         X_gt_sup_com['X_id'].append(i)
-                        X_gt_sup_com['prefix'].append(_[0])
+                        X_gt_sup_com['prefix'].append(prefix)
                         y_gt_com['com'].append(_[4])
 
                         # suffix or sql
-                        # ____________ filter by eq ________________
-                        if _[2] < 8:
-                            X_gt_sup_suffix['X_id'].append(i)
-                            X_gt_sup_suffix['prefix'].append(_[0])
-                            y_gt_suffix['suffix'].append(_[5])
-
-                        else:
-                            X_gt_sup_sql['X_id'].append(i)
-                            y_gt_sql['sql'].append(_[6])
+                        # ____________ filter by com ________________
+                        if _[4] != 0:
+                            # ____________ filter by eq ________________
+                            if _[2] < 8:
+                                X_gt_sup_suffix['X_id'].append(i)
+                                X_gt_sup_suffix['prefix'].append(prefix)
+                                y_gt_suffix['suffix'].append(DataPreprocessor.col_map(_[5]))
+                            else:
+                                X_gt_sup_sql['X_id'].append(i)
+                                y_gt_sql['sql'].append(_[6])
 
                 X_gt_sup_prefix['X_id'].append(i)
                 X_gt_sup_prefix['N'].append(N)
-                y_gt_prefix['prefix'].append(prefix)
+                y_gt_prefix['prefix'].append(targets)
 
             with open(store_folder + '/X_gt_sup_N', 'w') as f:
                 f.write(json.dumps(X_gt_sup_N, ensure_ascii=False, indent=4, separators=(',', ':')))
@@ -574,9 +611,382 @@ class DataPreprocessor:
             with open(store_folder + '/y_gt_sql', 'w') as f:
                 f.write(json.dumps(y_gt_sql, ensure_ascii=False, indent=4, separators=(',', ':')))
 
+        # 0.
+        print('-------------------- generate where part--------------------')
+        if os.path.exists(store_folder):
+            shutil.rmtree(store_folder)
+        os.makedirs(store_folder)
+
         # 1. filter the wrong data
         data = DataPreprocessor.__filter(raw_data)
         total = len(data)
 
         # 2. conditions
         __generate_conditions()
+
+    @staticmethod
+    def __generate_y_group_by(raw_data: list, content: list, schema: list, store_folder: str):
+        """generate the ground truth of group by part for each sample in X.
+
+        :param raw_data: a list contains db_name, question_id and question.
+        :param content: content of database given by db_name in data.
+        :param schema: schema of database given by db_name in data.
+        :param store_folder: the folder location to store the result.
+        :return: None
+        """
+
+        def __generate_group_by():
+            X_gt_sup_need = {'X_id': []}
+            y_gt_need = {'need': []}
+
+            X_gt_sup_col = {'X_id': []}
+            y_gt_col = {'col': []}
+
+            for i in range(total):
+                if data[i] is None:
+                    continue
+
+                X_gt_sup_need['X_id'].append(i)
+                y_gt_need['need'].append(len(data[i]['sql']['groupBy']))
+
+                if data[i]['sql']['groupBy']:
+                    X_gt_sup_col['X_id'].append(i)
+                    y_gt_col['col'].append(DataPreprocessor.col_map(data[i]['sql']['groupBy'][0]))
+
+            with open(store_folder + '/X_gt_sup_need', 'w') as f:
+                f.write(json.dumps(X_gt_sup_need, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_need', 'w') as f:
+                f.write(json.dumps(y_gt_need, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+        # 0.
+        print('-------------------- generate group by part--------------------')
+        if os.path.exists(store_folder):
+            shutil.rmtree(store_folder)
+        os.makedirs(store_folder)
+
+        # 1. filter the wrong data
+        data = DataPreprocessor.__filter(raw_data)
+        total = len(data)
+
+        # 2. group_by
+        __generate_group_by()
+
+    @staticmethod
+    def __generate_y_having(raw_data: list, content: list, schema: list, store_folder: str):
+        """generate the ground truth of having part for each sample in X.
+
+        :param raw_data: a list contains db_name, question_id and question.
+        :param content: content of database given by db_name in data.
+        :param schema: schema of database given by db_name in data.
+        :param store_folder: the folder location to store the result.
+        :return: None
+        """
+
+        def __generate_conditions():
+            """ conditions: the conditions """
+            X_gt_sup_N = {'X_id': []}
+            y_gt_N = {'N': []}
+
+            X_gt_sup_operation = {'X_id': []}
+            y_gt_operation = {'operation': []}
+
+            X_gt_sup_prefix = {'X_id': [], 'N': []}
+            y_gt_prefix = {'prefix': []}
+
+            X_gt_sup_agg = {'X_id': [], 'prefix': []}
+            y_gt_agg = {'agg': []}
+
+            X_gt_sup_eq = {'X_id': [], 'prefix': [], 'com': [], 'value': []}
+            y_gt_eq = {'eq': []}
+
+            # X_gt_sup_value = {'X_id': [], 'prefix': [], 'com': []}
+            # y_gt_value = {'value': []}
+
+            X_gt_sup_com = {'X_id': [], 'prefix': []}
+            y_gt_com = {'com': []}
+
+            X_gt_sup_suffix = {'X_id': [], 'prefix': [], 'com': []}
+            y_gt_suffix = {'suffix': []}
+
+            X_gt_sup_sql = {'X_id': []}
+            y_gt_sql = {'sql': []}
+
+            for i in range(total):
+                if data[i] is None:
+                    continue
+
+                # N
+                N = min(2, len(data[i]['sql']['having']))
+                X_gt_sup_N['X_id'].append(i)
+                y_gt_N['N'].append(N)
+
+                if N == 0:
+                    continue
+
+                # operation
+                if N == 2:
+                    X_gt_sup_operation['X_id'].append(i)
+                    y_gt_operation['operation'].append(0 if data[i]['sql']['having'][1] == 'AND' else 1)
+
+                # prefix, com, value and suffix
+                targets = []
+                for _ in data[i]['sql']['having']:
+                    if type(_) == list:
+                        # prefix
+                        prefix = DataPreprocessor.col_map(_[0])
+                        targets.append(prefix)
+
+                        # agg
+                        X_gt_sup_agg['X_id'].append(i)
+                        X_gt_sup_agg['prefix'].append(prefix)
+                        y_gt_agg['agg'].append(_[1])
+
+                        # eq
+                        if True:
+                            X_gt_sup_eq['X_id'].append(i)
+                            X_gt_sup_eq['prefix'].append(prefix)
+                            y_gt_eq['eq'].append(_[2])
+
+                        # # value
+                        # # ____________ filter by com ________________
+                        # if True:
+                        #     X_gt_sup_value['X_id'].append(i)
+                        #     X_gt_sup_value['prefix'].append(_[0])
+                        #     X_gt_sup_value['com'].append(_[2])
+                        #     y_gt_value['value'].append(_[3])
+
+                        # com
+                        X_gt_sup_com['X_id'].append(i)
+                        X_gt_sup_com['prefix'].append(prefix)
+                        y_gt_com['com'].append(_[4])
+
+                        # suffix or sql
+                        # ____________ filter by com ________________
+                        if _[4] != 0:
+                            # ____________ filter by eq ________________
+                            if _[2] < 8:
+                                X_gt_sup_suffix['X_id'].append(i)
+                                X_gt_sup_suffix['prefix'].append(prefix)
+                                y_gt_suffix['suffix'].append(DataPreprocessor.col_map(_[5]))
+
+                            else:
+                                X_gt_sup_sql['X_id'].append(i)
+                                y_gt_sql['sql'].append(_[6])
+
+                X_gt_sup_prefix['X_id'].append(i)
+                X_gt_sup_prefix['N'].append(N)
+                y_gt_prefix['prefix'].append(targets)
+
+            with open(store_folder + '/X_gt_sup_N', 'w') as f:
+                f.write(json.dumps(X_gt_sup_N, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_N', 'w') as f:
+                f.write(json.dumps(y_gt_N, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_operation', 'w') as f:
+                f.write(json.dumps(X_gt_sup_operation, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_operation', 'w') as f:
+                f.write(json.dumps(y_gt_operation, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_agg', 'w') as f:
+                f.write(json.dumps(X_gt_sup_agg, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_agg', 'w') as f:
+                f.write(json.dumps(y_gt_agg, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_prefix', 'w') as f:
+                f.write(json.dumps(X_gt_sup_prefix, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_prefix', 'w') as f:
+                f.write(json.dumps(y_gt_prefix, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_com', 'w') as f:
+                f.write(json.dumps(X_gt_sup_com, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_com', 'w') as f:
+                f.write(json.dumps(y_gt_com, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_eq', 'w') as f:
+                f.write(json.dumps(X_gt_sup_eq, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_eq', 'w') as f:
+                f.write(json.dumps(y_gt_eq, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_suffix', 'w') as f:
+                f.write(json.dumps(X_gt_sup_suffix, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_suffix', 'w') as f:
+                f.write(json.dumps(y_gt_suffix, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_sql', 'w') as f:
+                f.write(json.dumps(X_gt_sup_sql, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_sql', 'w') as f:
+                f.write(json.dumps(y_gt_sql, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+        # 0.
+        print('-------------------- generate having part--------------------')
+        if os.path.exists(store_folder):
+            shutil.rmtree(store_folder)
+        os.makedirs(store_folder)
+
+        # 1. filter the wrong data
+        data = DataPreprocessor.__filter(raw_data)
+        total = len(data)
+
+        # 2. conditions
+        __generate_conditions()
+
+    @staticmethod
+    def __generate_y_limit(raw_data: list, content: list, schema: list, store_folder: str):
+        """generate the ground truth of limit part for each sample in X.
+
+        :param raw_data: a list contains db_name, question_id and question.
+        :param content: content of database given by db_name in data.
+        :param schema: schema of database given by db_name in data.
+        :param store_folder: the folder location to store the result.
+        :return: None
+        """
+
+        # 0.
+        print('-------------------- generate limit part--------------------')
+        if os.path.exists(store_folder):
+            shutil.rmtree(store_folder)
+        os.makedirs(store_folder)
+
+        def __generate_limit():
+            X_gt_sup_need = {'X_id': []}
+            y_gt_need = {'need': []}
+
+            for i in range(total):
+                if data[i] is None:
+                    continue
+
+                need = 1 if type(data[i]['sql']['limit']) is int  else 0
+                X_gt_sup_need['X_id'].append(i)
+                y_gt_need['need'].append(need)
+
+            with open(store_folder + '/X_gt_sup_need', 'w') as f:
+                f.write(json.dumps(X_gt_sup_need, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_need', 'w') as f:
+                f.write(json.dumps(y_gt_need, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+        # 1. filter the wrong data
+        data = DataPreprocessor.__filter(raw_data)
+        total = len(data)
+
+        # 2. limit
+        __generate_limit()
+
+    @staticmethod
+    def __generate_y_order_by(raw_data: list, content: list, schema: list, store_folder: str):
+        """generate the ground truth of order by part for each sample in X.
+
+        :param raw_data: a list contains db_name, question_id and question.
+        :param content: content of database given by db_name in data.
+        :param schema: schema of database given by db_name in data.
+        :param store_folder: the folder location to store the result.
+        :return: None
+        """
+
+        def __generate_order_by():
+            X_gt_sup_order = {'X_id': []}
+            y_gt_order = {'order': []}
+
+            X_gt_sup_col = {'X_id': []}
+            y_gt_col = {'col': []}
+
+            for i in range(total):
+                if data[i] is None:
+                    continue
+
+                X_gt_sup_order['X_id'].append(i)
+                if len(data[i]['sql']['orderBy']):
+                    y_gt_order['order'].append(1 if data[i]['sql']['orderBy'][0] != 'DESC' else 2)
+
+                    X_gt_sup_col['X_id'].append(i)
+                    y_gt_col['col'].append(DataPreprocessor.col_map(data[i]['sql']['orderBy'][1][0][0]))
+                else:
+                    y_gt_order['order'].append(0)
+
+            with open(store_folder + '/X_gt_sup_order', 'w') as f:
+                f.write(json.dumps(X_gt_sup_order, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_order', 'w') as f:
+                f.write(json.dumps(y_gt_order, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_col', 'w') as f:
+                f.write(json.dumps(X_gt_sup_col, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_col', 'w') as f:
+                f.write(json.dumps(y_gt_col, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+        # 0.
+        print('-------------------- generate order by part--------------------')
+        if os.path.exists(store_folder):
+            shutil.rmtree(store_folder)
+        os.makedirs(store_folder)
+
+        # 1. filter the wrong data
+        data = DataPreprocessor.__filter(raw_data)
+        total = len(data)
+
+        # 2. group_by
+        __generate_order_by()
+
+    @staticmethod
+    def __generate_y_combination(raw_data: list, content: list, schema: list, store_folder: str):
+        """generate the ground truth of order by part for each sample in X.
+
+        :param raw_data: a list contains db_name, question_id and question.
+        :param content: content of database given by db_name in data.
+        :param schema: schema of database given by db_name in data.
+        :param store_folder: the folder location to store the result.
+        :return: None
+        """
+
+        # 0.
+        print('-------------------- generate combination by part--------------------')
+        if os.path.exists(store_folder):
+            shutil.rmtree(store_folder)
+        os.makedirs(store_folder)
+
+        def __generate_combination():
+            X_gt_sup_comb = {'X_id': []}
+            y_gt_comb = {'comb': []}
+
+            X_gt_sup_sql = {'X_id': []}
+            y_gt_sql = {'sql': []}
+
+            for i in range(total):
+                if data[i] is None:
+                    continue
+
+                if len(data[i]['sql']['except']):
+                    comb = 1
+                    X_gt_sup_sql['X_id'].append(i)
+                    y_gt_sql['sql'].append(data[i]['sql']['except'])
+
+                elif len(data[i]['sql']['union']):
+                    comb = 2
+                    X_gt_sup_sql['X_id'].append(i)
+                    y_gt_sql['sql'].append(data[i]['sql']['union'])
+
+                elif len(data[i]['sql']['intersect']):
+                    comb = 3
+                    X_gt_sup_sql['X_id'].append(i)
+                    y_gt_sql['sql'].append(data[i]['sql']['intersect'])
+
+                else:
+                    comb = 0
+
+                X_gt_sup_comb['X_id'].append(i)
+                y_gt_comb['comb'].append(comb)
+
+            with open(store_folder + '/X_gt_sup_comb', 'w') as f:
+                f.write(json.dumps(X_gt_sup_comb, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_comb', 'w') as f:
+                f.write(json.dumps(y_gt_comb, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_sql', 'w') as f:
+                f.write(json.dumps(X_gt_sup_sql, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_sql', 'w') as f:
+                f.write(json.dumps(y_gt_sql, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+        # 1. filter the wrong data
+        data = DataPreprocessor.__filter(raw_data)
+        total = len(data)
+
+        # 2. combination
+        __generate_combination()

@@ -3,11 +3,9 @@ Preprocess the data source to (X, y) for 'Train' and 'Validation' or X for 'Test
 """
 
 import json
-import pandas as pd
-import os
 import DataLinkSet as DLSet
 from transformers import BertTokenizer
-import shutil
+from tools.file_manager import generate_new_folder
 
 
 class DataPreprocessor:
@@ -42,15 +40,21 @@ class DataPreprocessor:
             schema = json.load(f)
 
         # clear the folder and generate new one
-        if os.path.exists(DLSet.main_folder_link % data_source):
-            shutil.rmtree(DLSet.main_folder_link % data_source)
-        os.makedirs(DLSet.main_folder_link % data_source)
+        generate_new_folder(DLSet.main_folder_link % data_source)
 
         # generate X after tokenizer
         DataPreprocessor.__generate_X(data, content, schema, DLSet.X_link % data_source)
 
         # in cheat mode, the ground truth should be format as y
         if cheat_mode is False:
+            generate_new_folder(DLSet.main_folder_link % data_source + '/Select')
+            generate_new_folder(DLSet.main_folder_link % data_source + '/From')
+            generate_new_folder(DLSet.main_folder_link % data_source + '/Where')
+            generate_new_folder(DLSet.main_folder_link % data_source + '/GroupBy')
+            generate_new_folder(DLSet.main_folder_link % data_source + '/Having')
+            generate_new_folder(DLSet.main_folder_link % data_source + '/Limit')
+            generate_new_folder(DLSet.main_folder_link % data_source + '/GroupBy')
+            generate_new_folder(DLSet.main_folder_link % data_source + '/Combination')
             return
 
         # generate y
@@ -328,9 +332,7 @@ class DataPreprocessor:
 
         # 0.
         print('-------------------- generate select part--------------------')
-        if os.path.exists(store_folder):
-            shutil.rmtree(store_folder)
-        os.makedirs(store_folder)
+        generate_new_folder(store_folder)
 
         # 1. filter the wrong data
         data = DataPreprocessor.__filter(raw_data)
@@ -464,9 +466,7 @@ class DataPreprocessor:
 
         # 0.
         print('-------------------- generate from part--------------------')
-        if os.path.exists(store_folder):
-            shutil.rmtree(store_folder)
-        os.makedirs(store_folder)
+        generate_new_folder(store_folder)
 
         # 1. filter the wrong data
         data = DataPreprocessor.__filter(raw_data)
@@ -613,9 +613,7 @@ class DataPreprocessor:
 
         # 0.
         print('-------------------- generate where part--------------------')
-        if os.path.exists(store_folder):
-            shutil.rmtree(store_folder)
-        os.makedirs(store_folder)
+        generate_new_folder(store_folder)
 
         # 1. filter the wrong data
         data = DataPreprocessor.__filter(raw_data)
@@ -660,9 +658,7 @@ class DataPreprocessor:
 
         # 0.
         print('-------------------- generate group by part--------------------')
-        if os.path.exists(store_folder):
-            shutil.rmtree(store_folder)
-        os.makedirs(store_folder)
+        generate_new_folder(store_folder)
 
         # 1. filter the wrong data
         data = DataPreprocessor.__filter(raw_data)
@@ -819,9 +815,7 @@ class DataPreprocessor:
 
         # 0.
         print('-------------------- generate having part--------------------')
-        if os.path.exists(store_folder):
-            shutil.rmtree(store_folder)
-        os.makedirs(store_folder)
+        generate_new_folder(store_folder)
 
         # 1. filter the wrong data
         data = DataPreprocessor.__filter(raw_data)
@@ -843,9 +837,7 @@ class DataPreprocessor:
 
         # 0.
         print('-------------------- generate limit part--------------------')
-        if os.path.exists(store_folder):
-            shutil.rmtree(store_folder)
-        os.makedirs(store_folder)
+        generate_new_folder(store_folder)
 
         def __generate_limit():
             X_gt_sup_need = {'X_id': []}
@@ -914,9 +906,7 @@ class DataPreprocessor:
 
         # 0.
         print('-------------------- generate order by part--------------------')
-        if os.path.exists(store_folder):
-            shutil.rmtree(store_folder)
-        os.makedirs(store_folder)
+        generate_new_folder(store_folder)
 
         # 1. filter the wrong data
         data = DataPreprocessor.__filter(raw_data)
@@ -938,9 +928,7 @@ class DataPreprocessor:
 
         # 0.
         print('-------------------- generate combination by part--------------------')
-        if os.path.exists(store_folder):
-            shutil.rmtree(store_folder)
-        os.makedirs(store_folder)
+        generate_new_folder(store_folder)
 
         def __generate_combination():
             X_gt_sup_comb = {'X_id': []}

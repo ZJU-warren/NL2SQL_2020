@@ -1,6 +1,12 @@
 """ the link of the dataset and files used """
 # --------------------------- folders --------------------------
 base_folder_link = '../DataSet'
+origin_folder_link = base_folder_link + '/Origin'
+origin_source_folder_link = origin_folder_link + '/%d'
+
+train_folder_link = base_folder_link + '/Train'
+validation_folder_link = base_folder_link + '/Validation'
+test_folder_link = base_folder_link + '/Test'
 raw_folder_link = base_folder_link + '/%s' + '/Raw'
 main_folder_link = base_folder_link + '/%s' + '/Main'
 model_folder_link = base_folder_link + '/Models'

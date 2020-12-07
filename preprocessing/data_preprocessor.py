@@ -289,6 +289,7 @@ class DataPreprocessor:
             for i in range(total):
                 if data[i] is None:
                     continue
+
                 X_gt_sup_K['X_id'].append(i)
                 y_gt_K['K'].append(len(data[i]['sql']['select']))
 
@@ -308,14 +309,14 @@ class DataPreprocessor:
 
                 # com
                 for _ in data[i]['sql']['select']:
-                    X_gt_sup_agg['X_id'].append(i)
-                    X_gt_sup_agg['prefix'].append(DataPreprocessor.col_map(_[0]))
+                    X_gt_sup_com['X_id'].append(i)
+                    X_gt_sup_com['prefix'].append(DataPreprocessor.col_map(_[0]))
                     y_gt_com['com'].append(_[2])
 
                 # suffix_col
                 for _ in data[i]['sql']['select']:
-                    X_gt_sup_agg['X_id'].append(i)
-                    X_gt_sup_agg['prefix'].append(DataPreprocessor.col_map(_[0]))
+                    X_gt_sup_suffix['X_id'].append(i)
+                    X_gt_sup_suffix['prefix'].append(DataPreprocessor.col_map(_[0]))
                     y_gt_suffix['suffix'].append(_[3])
 
             with open(store_folder + '/X_gt_sup_K', 'w') as f:

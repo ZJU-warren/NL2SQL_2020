@@ -60,7 +60,7 @@ class CondSuffixNet(nn.Module):
 
 
 class JCondNet(nn.Module):
-    MAX_NUM_OF_J = 3
+    MAX_NUM_OF_J = 4
 
     def __init__(self, base_net, hidden=768, gpu=True):
         super(JCondNet, self).__init__()

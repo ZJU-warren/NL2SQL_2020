@@ -19,7 +19,7 @@ class CondSuffixNetProxy(ModuleProxy):
         self._init_train(base_net, CondSuffixNet, 'Having', 'suffix')
 
         for i in range(self.y_gt.shape[0]):
-            col_num = self.train_data_holder.col_num(i)
+            col_num = self.train_data_holder.col_num(self.X_id[i])
             self.header_mask[i, :col_num] = 1
 
     def backward(self, y_pd, data_index, loss, top=1):

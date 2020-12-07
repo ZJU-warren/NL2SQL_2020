@@ -25,11 +25,11 @@ class SelectProxy:
 
         self.col_suffix_proxy \
             = ColSuffixNetProxy(base_net, predict_mode=predict_mode,
-                                 train_data_holder=train_data_holder, valid_data_holder=valid_data_holder)
+                                train_data_holder=train_data_holder, valid_data_holder=valid_data_holder)
 
     def run_a_epoch(self):
-        # self.n_col_proxy.run_a_epoch()
-        self.col_prefix_proxy.run_a_epoch()
+        self.n_col_proxy.run_a_epoch()
+        # self.col_prefix_proxy.run_a_epoch()
         # self.col_agg_proxy.run_a_epoch()
         # self.col_com_proxy.run_a_epoch()
         # self.col_suffix_proxy.run_a_epoch()

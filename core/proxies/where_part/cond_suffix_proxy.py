@@ -16,7 +16,7 @@ class CondSuffixNetProxy(ModuleProxy):
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None, valid_data_holder=None):
         super(CondSuffixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder)
-        self._init_train(base_net, CondSuffixNet, 'From', 'suffix')
+        self._init_env(base_net, CondSuffixNet, 'From', 'suffix')
 
         for i in range(self.y_gt.shape[0]):
             col_num = self.train_data_holder.col_num(i)

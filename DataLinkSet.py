@@ -11,6 +11,7 @@ raw_folder_link = base_folder_link + '/%s' + '/Raw'
 main_folder_link = base_folder_link + '/%s' + '/Main'
 model_folder_link = base_folder_link + '/Models'
 tmp_folder_link = base_folder_link + '/Tmp'
+result_folder_link = base_folder_link + '/Result'
 
 # --------------------------- raw files ------------------------
 raw_data_link = raw_folder_link + '/data.json'

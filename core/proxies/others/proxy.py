@@ -1,9 +1,10 @@
 import DataLinkSet as DLSet
 import json
 import numpy as np
-from GlobalParameters import learning_rate
+from GlobalParameters import learning_rate, cuda_id
 import torch.optim as optim
 from tools.metrics import acc
+from tools.prediction_gen import predict_generate
 import random
 import torch
 
@@ -22,9 +23,9 @@ class ModuleProxy:
         self.load_model()
 
         # init data
-        with open(DLSet.main_folder_link % 'Test' + '/%s/X_pd_sup_%s' % (part_name, file_name), 'r') as f:
-            info = json.load(f)
-            self.X_id = np.array(info['X_id'], dtype=np.int32)
+        # self.X_id = np.array(range(self.test_data_holder.total))
+        self.X_id = torch.Tensor(range(self.test_data_holder.total)).long().cuda(cuda_id)
+        self.total = self.test_data_holder.total
 
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
         # init model
@@ -56,11 +57,12 @@ class ModuleProxy:
         self.batch_size = max(self.total // self.batch, 5)
         self.optimizer = optim.Adam(self.target_net.parameters(), lr=learning_rate)
 
-    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None, batch=1000):
+    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None, batch=1000):
         self.mode = predict_mode
         self.batch = batch
         self.train_data_holder = train_data_holder
         self.valid_data_holder = valid_data_holder
+        self.test_data_holder = test_data_holder
         self.best_acc = 0
         self.last_acc = 0
         self.avg_loss = 0
@@ -69,32 +71,65 @@ class ModuleProxy:
         self.step = 0
         self.start = 0
 
-    def predict(self, top=1):
-        y_pd_score = self.target_net(self.train_data_holder, self.X_id)
-        print(y_pd_score)
+        self.need_train = True
+
+    def predict(self, top=1, keyword=None, target_path=None):
+        y_pd_score = []
+        for i in range(self.total):
+            start = i * 3
+            end = min((i + 1) * 3, self.total)
+            print('[%d, %d)' % (start, end))
+            y_pd_score.extend(
+                self.target_net(self.test_data_holder.input_ids[start: end],
+                                self.test_data_holder.token_type_ids[start: end],
+                                self.test_data_holder.attention_mask[start: end], self.X_id[start: end]))
+
+            while True:
+                continue
+
+            torch.cuda.empty_cache()
+
+        result = predict_generate(y_pd_score, top)
+        # generate prediction
+        prediction = []
+        for _ in range(self.total):
+            question_id = self.test_data_holder.get_question_id(self.X_id[_])
+            prediction.append({
+                'X_id': self.X_id[_],
+                'question_id': question_id,
+                keyword: result[_]
+            })
+
+        with open(DLSet.result_folder_link + target_path, 'w') as f:
+            f.write(json.dumps(prediction, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+        return result
 
     def run_a_epoch(self):
+        if self.need_train is False:
+            return
+
         # only for train
 
         self.last_acc = 0
         self.avg_loss = 0
+
         step = 0
-
         while True:
-            if self.step == 0:
-                self.last_acc *= step
-
             # calculate the start, end of this batch
             end = min(self.total, self.start + self.batch_size)
             # print('[%d, %d)' % (self.start, end))
             data_index = list(range(self.start, end))
 
             # forward
-            self.forward(data_index)
+
+            acc_value_valid = self.forward(data_index)
 
             # step
-            if self.step == 0:
+            if acc_value_valid != -1:
+                self.last_acc *= step
                 step += 1
+                self.last_acc += acc_value_valid
                 self.last_acc /= step
 
             # update for next batch
@@ -110,14 +145,15 @@ class ModuleProxy:
             self.best_acc = self.last_acc
             # self.load_model()
 
+            if self.last_acc > 0.95:
+                self.need_train = False
+
         print('- [%s] with loss %f and acc %f in the last epoch.'
               % (self.__class__.__name__, self.avg_loss, self.last_acc))
 
     def forward(self, data_index):
         y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index])
-
-        if self.mode is False:
-            self.backward(y_pd_score, data_index, None)
+        return self.backward(y_pd_score, data_index, None)
 
     def backward(self, y_pd, data_index, loss, top=None):
         self.avg_loss = (self.avg_loss * self.step + loss.data.cpu().numpy()) / (self.step + 1)
@@ -125,6 +161,8 @@ class ModuleProxy:
         self.step += 1
         self.loss = loss
         self.loss.backward()
+
+        acc_value_valid = -1
 
         if self.step % 20 == 0:
             print('-- loss_cpu', self.loss.data.cpu().numpy())
@@ -143,6 +181,7 @@ class ModuleProxy:
             # @validation
             total_valid = len(self.valid_y_gt)
             data_index = random.sample([i for i in range(total_valid)], 10)
+            # data_index = [i for i in range(total_valid)]
             gt = self.valid_y_gt[data_index]
             y_pd_valid = self.target_net(self.valid_data_holder, self.valid_X_id[data_index])
 
@@ -152,22 +191,27 @@ class ModuleProxy:
                 acc_value_valid = acc(y_pd_valid.data.cpu().numpy(), gt, top=top[1][data_index])
 
             print('%s -- acc@valid' % self.__class__.__name__, acc_value_valid)
-            self.last_acc += acc_value_valid
             self.step = 0
+
+        return acc_value_valid
 
     def save_model(self):
         # stash
         base_net = self.target_net.base_net
         self.target_net.base_net = None
-        torch.save(self.target_net.state_dict(), DLSet.model_folder_link + '/%s' % self.__class__.__name__)
+        torch.save(self.target_net.state_dict(), DLSet.model_folder_link + '/%s' % self.__class__)
 
         # recover
         self.target_net.base_net = base_net
 
     def load_model(self):
         # stash
-        base_net = self.target_net.base_net
-        self.target_net.load(DLSet.model_folder_link + '/%s' % self.__class__.__name__)
+        pre_trained_dict = torch.load(DLSet.model_folder_link + '/%s' % self.__class__)
+        model_dict = self.target_net.state_dict()
 
-        # recover
-        self.target_net.base_net = base_net
+        pre_trained_dict = {k: v
+                            for k, v in pre_trained_dict.items()
+                            if k in model_dict}
+        model_dict.update(pre_trained_dict)
+        self.target_net.load_state_dict(model_dict)
+

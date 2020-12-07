@@ -3,7 +3,6 @@ import torch
 from GlobalParameters import cuda_id, inf, max_columns_number, max_table_column_len
 
 
-
 class Base(torch.nn.Module):
     def __init__(self, hidden=768, gpu=True):
         super(Base, self).__init__()
@@ -20,26 +19,26 @@ class Base(torch.nn.Module):
         if gpu:
             self.cuda(cuda_id)
 
-    def forward(self, data_holder, X_id):
-        batch_input_ids = torch.from_numpy(data_holder.input_ids[X_id])
-        batch_token_type_ids = torch.from_numpy(data_holder.token_type_ids[X_id])
-        batch_attention_mask = torch.from_numpy(data_holder.attention_mask[X_id])
+    def forward(self, batch_input_ids, batch_token_type_ids, batch_attention_mask,
+                tables, columns, X_id):
 
         (tokens_embeddings, nsp_csl) \
             = self.bert(batch_input_ids, batch_token_type_ids, batch_attention_mask)
         cls = tokens_embeddings[:, 0]
 
-        out, col_att = self.attention_unit(X_id.shape[0], data_holder, X_id, tokens_embeddings, cls)
+        out, col_att = self.attention_unit(X_id.shape[0], batch_input_ids, batch_token_type_ids, batch_attention_mask,
+                                           X_id, tokens_embeddings, cls)
         return cls, out, col_att
 
-    def attention_unit(self, batch, data_holder, X_id, tokens_embeddings, cls):
+    def attention_unit(self, batch, batch_input_ids, batch_token_type_ids,
+                       batch_attention_mask, tables, columns, X_id, tokens_embeddings, cls):
         # generate r (columns_number * embedding_size) with attention
         columns_matrix = torch.zeros([batch, max_columns_number, max_table_column_len, self.hidden])
 
         batch_col_mask = []
         for i in range(batch):
-            tables = data_holder.tables[X_id][i]
-            columns = data_holder.columns[X_id][i]
+            # tables = data_holder.tables[X_id.cpu()][i]
+            # columns = data_holder.columns[X_id.cpu()][i]
             col = 0
             col_mask = []
             for j in range(len(tables)):

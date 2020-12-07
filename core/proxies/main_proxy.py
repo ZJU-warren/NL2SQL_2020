@@ -21,30 +21,47 @@ class MainProxy:
         with open(DLSet.X_link % 'Validation', 'r') as f:
             self.valid_data_holder = DataHolder(json.load(f))
 
+    def __init_test(self):
+        # load data
+        with open(DLSet.X_link % 'Test', 'r') as f:
+            self.test_data_holder = DataHolder(json.load(f))
+
     def __init__(self, predict_mode=False, epoch=100):
         self.mode = predict_mode
         self.epoch = epoch
 
         # init model
         self.base_net = Base()
+        self.train_data_holder = None
+        self.valid_data_holder = None
+        self.test_data_holder = None
 
         if self.mode:
             self.load_model()
+            self.__init_test()
         else:
             self.__init_train()
 
-        self.select_proxy = SelectProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
-        self.from_proxy = FromProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
-        self.where_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
-        self.having_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
-        self.groupby_proxy = GroupByProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
-        self.orderby_proxy = OrderByProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
-        self.limit_proxy = LimitProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
-        self.combination_proxy = CombinationProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
+        self.select_proxy = SelectProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        # self.from_proxy = FromProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        # self.where_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        # self.having_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        # self.groupby_proxy = GroupByProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        # self.orderby_proxy = OrderByProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        # self.limit_proxy = LimitProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        # self.combination_proxy = CombinationProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
 
     def run(self):
         if self.mode:
-            pass
+            for _ in range(self.epoch):
+                self.select_proxy.predict()
+                # self.from_proxy.run_a_epoch()
+                # self.where_proxy.run_a_epoch()
+                # self.having_proxy.run_a_epoch()
+                # self.groupby_proxy.run_a_epoch()
+                # self.orderby_proxy.run_a_epoch()
+                # self.limit_proxy.run_a_epoch()
+                # self.combination_proxy.run_a_epoch()
         else:
             for _ in range(self.epoch):
                 self.select_proxy.run_a_epoch()
@@ -58,7 +75,7 @@ class MainProxy:
             self.save_model()
 
     def save_model(self):
-        torch.save(self.base_net.state_dict(), DLSet.model_folder_link + '/%s' % self.__class__.__name__)
+        torch.save(self.base_net.state_dict(), DLSet.model_folder_link + '/%s' % self.__class__)
 
     def load_model(self):
-        self.base_net.load(DLSet.model_folder_link + '/%s' % self.__class__.__name__)
+        self.base_net.load_state_dict(torch.load(DLSet.model_folder_link + '/%s' % self.__class__))

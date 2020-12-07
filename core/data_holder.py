@@ -5,7 +5,7 @@ from GlobalParameters import cuda_id
 
 class DataHolder:
     def __init__(self,  X):
-        self.input_ids = torch.Tensor(X['input_ids']).long().cuda(cuda_id)
+        self.input_ids = np.array(X['input_ids'])
         self.token_type_ids = torch.Tensor(X['token_type_ids']).long().cuda(cuda_id)
         self.attention_mask = torch.Tensor(X['attention_mask']).long().cuda(cuda_id)
         self.tables = np.array(X['idx']['tables'], dtype='object')

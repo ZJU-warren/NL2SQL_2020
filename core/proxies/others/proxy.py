@@ -23,8 +23,7 @@ class ModuleProxy:
         self.load_model()
 
         # init data
-        # self.X_id = np.array(range(self.test_data_holder.total))
-        self.X_id = torch.Tensor(range(self.test_data_holder.total)).long().cuda(cuda_id)
+        self.X_id = np.array(range(self.test_data_holder.total))
         self.total = self.test_data_holder.total
 
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
@@ -34,7 +33,7 @@ class ModuleProxy:
         # init data
         with open(DLSet.main_folder_link % 'Train' + '/%s/X_gt_sup_%s' % (part_name, file_name), 'r') as f:
             info = json.load(f)
-            self.X_id = np.array(info['X_id'], dtype=np.int32)
+            self.X_id = np.array(info['X_id'])
 
         with open(DLSet.main_folder_link % 'Train' + '/%s/y_gt_%s' % (part_name, file_name), 'r') as f:
             if tensor:
@@ -43,7 +42,7 @@ class ModuleProxy:
                 self.y_gt = np.array(json.load(f)[file_name], dtype=object)
 
         with open(DLSet.main_folder_link % 'Validation' + '/%s/X_gt_sup_%s' % (part_name, file_name), 'r') as f:
-            self.valid_X_id = np.array(json.load(f)['X_id'], dtype=np.int32)
+            self.valid_X_id = np.array(info['X_id'])
 
         with open(DLSet.main_folder_link % 'Validation' + '/%s/y_gt_%s' % (part_name, file_name), 'r') as f:
             if tensor:
@@ -75,31 +74,33 @@ class ModuleProxy:
 
     def predict(self, top=1, keyword=None, target_path=None):
         y_pd_score = []
+        self.target_net.eval()
         for i in range(self.total):
-            start = i * 3
-            end = min((i + 1) * 3, self.total)
-            print('[%d, %d)' % (start, end))
-            y_pd_score.extend(
-                self.target_net(self.test_data_holder.input_ids[start: end],
-                                self.test_data_holder.token_type_ids[start: end],
-                                self.test_data_holder.attention_mask[start: end], self.X_id[start: end]))
+            start = i*2
+            end = min((i + 1)*2, self.total)
+            y_pd_score.extend(self.target_net(self.test_data_holder,
+                                              self.X_id[start: end]).data.cpu().numpy())
 
-            while True:
-                continue
-
+            if i > 20:
+                break
             torch.cuda.empty_cache()
 
-        result = predict_generate(y_pd_score, top)
+        result = predict_generate(np.array(y_pd_score), top)
         # generate prediction
-        prediction = []
-        for _ in range(self.total):
-            question_id = self.test_data_holder.get_question_id(self.X_id[_])
-            prediction.append({
-                'X_id': self.X_id[_],
-                'question_id': question_id,
-                keyword: result[_]
-            })
+        prediction = {
+            'X_id': [],
+            'question_id': [],
+            keyword: [],
+        }
 
+        # for _ in range(self.total):
+        for _ in range(20):
+            question_id = self.test_data_holder.get_question_id(self.X_id[_])
+            prediction['X_id'].append(int(self.X_id[_].item()))
+            prediction['question_id'].append(question_id)
+            prediction[keyword].append(int(result[_]))
+
+        print(prediction)
         with open(DLSet.result_folder_link + target_path, 'w') as f:
             f.write(json.dumps(prediction, ensure_ascii=False, indent=4, separators=(',', ':')))
 
@@ -153,6 +154,7 @@ class ModuleProxy:
 
     def forward(self, data_index):
         y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index])
+
         return self.backward(y_pd_score, data_index, None)
 
     def backward(self, y_pd, data_index, loss, top=None):

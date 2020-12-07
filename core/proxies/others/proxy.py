@@ -75,14 +75,19 @@ class ModuleProxy:
     def predict(self, top=1, keyword=None, target_path=None):
         y_pd_score = []
         self.target_net.eval()
-        for i in range(self.total):
-            start = i*2
-            end = min((i + 1)*2, self.total)
+
+        i = 0
+        while True:
+            start = i * 10
+            end = min((i + 1) * 10, self.total)
             y_pd_score.extend(self.target_net(self.test_data_holder,
                                               self.X_id[start: end]).data.cpu().numpy())
-
-            if i > 20:
+            if start % 100 == 0:
+                print("predict: [%d, ~]" % start)
+            # if end == self.total:
+            if end == 20: #!!!!!
                 break
+            i += 1
             torch.cuda.empty_cache()
 
         result = predict_generate(np.array(y_pd_score), top)
@@ -93,14 +98,17 @@ class ModuleProxy:
             keyword: [],
         }
 
-        # for _ in range(self.total):
+        # for _ in range(self.total):#!!!!!
         for _ in range(20):
             question_id = self.test_data_holder.get_question_id(self.X_id[_])
             prediction['X_id'].append(int(self.X_id[_].item()))
             prediction['question_id'].append(question_id)
-            prediction[keyword].append(int(result[_]))
 
-        print(prediction)
+            if type(result[_]) != np.ndarray:
+                prediction[keyword].append(int(result[_]))
+            else:
+                prediction[keyword].append(result[_].tolist())
+
         with open(DLSet.result_folder_link + target_path, 'w') as f:
             f.write(json.dumps(prediction, ensure_ascii=False, indent=4, separators=(',', ':')))
 
@@ -123,7 +131,6 @@ class ModuleProxy:
             data_index = list(range(self.start, end))
 
             # forward
-
             acc_value_valid = self.forward(data_index)
 
             # step
@@ -139,15 +146,18 @@ class ModuleProxy:
             if self.start == 0:
                 break
 
-        if self.last_acc > 0.8 and self.best_acc < self.last_acc:
+            break #!!!!!
+
+        #if self.last_acc > 0.8 and self.best_acc < self.last_acc: #!!!!!
+        if True:
             print('=============== save the best model [%s] with acc %f ================='
                   % (self.__class__.__name__, self.last_acc))
             self.save_model()
             self.best_acc = self.last_acc
             # self.load_model()
 
-            if self.last_acc > 0.95:
-                self.need_train = False
+            #if self.last_acc > 0.001: #!!!!!
+            self.need_train = False
 
         print('- [%s] with loss %f and acc %f in the last epoch.'
               % (self.__class__.__name__, self.avg_loss, self.last_acc))
@@ -201,14 +211,14 @@ class ModuleProxy:
         # stash
         base_net = self.target_net.base_net
         self.target_net.base_net = None
-        torch.save(self.target_net.state_dict(), DLSet.model_folder_link + '/%s' % self.__class__)
+        torch.save(self.target_net.state_dict(), DLSet.model_folder_link + '/%s' % self.__class__.__name__)
 
         # recover
         self.target_net.base_net = base_net
 
     def load_model(self):
         # stash
-        pre_trained_dict = torch.load(DLSet.model_folder_link + '/%s' % self.__class__)
+        pre_trained_dict = torch.load(DLSet.model_folder_link + '/%s' % self.__class__.__name__)
         model_dict = self.target_net.state_dict()
 
         pre_trained_dict = {k: v

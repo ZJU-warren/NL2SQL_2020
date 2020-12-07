@@ -41,8 +41,9 @@ class ColPrefixNetProxy(ModuleProxy):
         # init data
         self.total = self.X_id.shape[0]
 
-    def __init__(self, base_net, predict_mode=False, train_data_holder=None, valid_data_holder=None):
-        super(ColPrefixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder)
+    def __init__(self, base_net, predict_mode=False, train_data_holder=None,
+                 valid_data_holder=None, test_data_holder=None):
+        super(ColPrefixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
         self._init_env(base_net, CondPrefixNet, 'Select', 'prefix')
 
     def backward(self, y_pd, data_index, loss, top=None):
@@ -51,7 +52,7 @@ class ColPrefixNetProxy(ModuleProxy):
                        + (1 - sel_col_label) * torch.log(1 - y_pd + 1e-10)
         col_mask_loss = col_raw_loss * self.header_mask[data_index]
         loss = -torch.sum(col_mask_loss) / torch.sum(self.header_mask[data_index])
-        super().backward(y_pd, data_index, loss, top=(self.prefix_N, self.valid_prefix_N))
+        return super().backward(y_pd, data_index, loss, top=(self.prefix_N, self.valid_prefix_N))
 
     def predict(self, top=1, keyword=None, target_path=None):
-        result = super().predict(top, 'prefix', '/Select/Prefix')
+        result = super().predict(self.prefix_N, 'prefix', '/Select/prefix')

@@ -7,3 +7,5 @@ def generate_new_folder(path):
         shutil.rmtree(path)
     os.makedirs(path)
     print('mkdir', path)
+
+

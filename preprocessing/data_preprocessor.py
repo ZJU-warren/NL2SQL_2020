@@ -390,6 +390,7 @@ class DataPreprocessor:
                         X_gt_sup_suffix['prefix'].append(prefix)
                         y_gt_suffix['suffix'].append(DataPreprocessor.col_map(_[5]))
 
+
                 y_gt_prefix['prefix'].append(targets)
 
             with open(store_folder + '/X_gt_sup_N', 'w') as f:

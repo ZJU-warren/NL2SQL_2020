@@ -1,19 +1,23 @@
-from core.proxies.from_part.from_proxy import FromProxy
+from core.proxies.from_proxy import FromProxy
 from core.models.base import Base
 import json
 import DataLinkSet as DLSet
+from core.data_holder import DataHolder
 
 
 class MainProxy:
     def __init_train(self):
         # load data
         with open(DLSet.X_link % 'Train', 'r') as f:
-            self.X = json.load(f)
+            self.train_data_holder = DataHolder(json.load(f))
+
+        with open(DLSet.X_link % 'Validation', 'r') as f:
+            self.valid_data_holder = DataHolder(json.load(f))
 
         # init model
-        self.base_net = Base(self.X)
+        self.base_net = Base()
 
-    def __init__(self, predict_mode=False, epoch=10):
+    def __init__(self, predict_mode=False, epoch=100):
         self.mode = predict_mode
         self.epoch = epoch
 
@@ -21,7 +25,7 @@ class MainProxy:
             pass
         else:
             self.__init_train()
-            self.from_proxy = FromProxy(self.base_net, self.mode)
+            self.from_proxy = FromProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
 
     def run(self):
         if self.mode:

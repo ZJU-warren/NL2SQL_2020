@@ -11,11 +11,11 @@ class CondPrefixNetProxy(ModuleProxy):
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
         super()._init_train(base_net, target_net, part_name, file_name)
 
-        with open(DLSet.main_folder_link % 'Train' + '/Where/X_gt_sup_prefix', 'r') as f:
+        with open(DLSet.main_folder_link % 'Train' + '/Having/X_gt_sup_prefix', 'r') as f:
             info = json.load(f)
             self.prefix_N = np.array(info['N'], dtype=np.int32)
 
-        with open(DLSet.main_folder_link % 'Validation' + '/Where/X_gt_sup_prefix', 'r') as f:
+        with open(DLSet.main_folder_link % 'Validation' + '/Having/X_gt_sup_prefix', 'r') as f:
             info = json.load(f)
             self.valid_prefix_N = np.array(info['N'], dtype=np.int32)
 
@@ -27,7 +27,7 @@ class CondPrefixNetProxy(ModuleProxy):
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None, valid_data_holder=None):
         super(CondPrefixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder)
-        self._init_train(base_net, CondPrefixNet, 'From', 'prefix')
+        self._init_train(base_net, CondPrefixNet, 'Having', 'prefix')
 
         for i in range(self.y_gt.shape[0]):
             col_num = self.train_data_holder.col_num(i)

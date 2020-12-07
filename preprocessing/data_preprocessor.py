@@ -235,7 +235,7 @@ class DataPreprocessor:
         DataPreprocessor.__generate_y_group_by(data, content, schema, store_folder + '/GroupBy')
         DataPreprocessor.__generate_y_having(data, content, schema, store_folder + '/Having')
         DataPreprocessor.__generate_y_limit(data, content, schema, store_folder + '/Limit')
-        DataPreprocessor.__generate_y_order_by(data, content, schema, store_folder + '/GroupBy')
+        DataPreprocessor.__generate_y_order_by(data, content, schema, store_folder + '/OrderBy')
         DataPreprocessor.__generate_y_combination(data, content, schema, store_folder + '/Combination')
 
     @staticmethod
@@ -656,7 +656,10 @@ class DataPreprocessor:
                 f.write(json.dumps(X_gt_sup_need, ensure_ascii=False, indent=4, separators=(',', ':')))
             with open(store_folder + '/y_gt_need', 'w') as f:
                 f.write(json.dumps(y_gt_need, ensure_ascii=False, indent=4, separators=(',', ':')))
-
+            with open(store_folder + '/X_gt_sup_col', 'w') as f:
+                f.write(json.dumps(X_gt_sup_col, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_col', 'w') as f:
+                f.write(json.dumps(y_gt_col, ensure_ascii=False, indent=4, separators=(',', ':')))
         # 0.
         print('-------------------- generate group by part--------------------')
         generate_new_folder(store_folder)

@@ -4,11 +4,13 @@ import torch
 
 
 class SelNumNet(nn.Module):
+    MAX_COL = 5
+
     def __init__(self, base_net, hidden=768, gpu=True):
         super(SelNumNet, self).__init__()
         self.base_net = base_net
         self.hidden = hidden
-        self.linear = nn.Sequential(nn.Dropout(0.3), nn.Linear(hidden, 4))
+        self.linear = nn.Sequential(nn.Dropout(0.3), nn.Linear(hidden, self.MAX_COL))
 
         if gpu:
             self.cuda(cuda_id)

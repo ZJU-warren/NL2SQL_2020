@@ -3,6 +3,7 @@ from core.proxies.where_proxy import WhereProxy
 from core.proxies.groupby_proxy import GroupByProxy
 from core.proxies.orderby_proxy import OrderByProxy
 from core.proxies.combination_proxy import CombinationProxy
+from core.proxies.select_proxy import SelectProxy
 from core.proxies.limit_proxy import LimitProxy
 from core.models.base import Base
 import json
@@ -37,19 +38,21 @@ class MainProxy:
             self.orderby_proxy = OrderByProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
             self.limit_proxy = LimitProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
             self.combination_proxy = CombinationProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
+            self.select_proxy = SelectProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder)
 
     def run(self):
         if self.mode:
             pass
         else:
             for _ in range(self.epoch):
-                self.from_proxy.run_a_epoch()
-                self.where_proxy.run_a_epoch()
-                self.having_proxy.run_a_epoch()
-                self.groupby_proxy.run_a_epoch()
-                self.orderby_proxy.run_a_epoch()
-                self.limit_proxy.run_a_epoch()
-                self.combination_proxy.run_a_epoch()
+                self.select_proxy.run_a_epoch()
+                # self.from_proxy.run_a_epoch()
+                # self.where_proxy.run_a_epoch()
+                # self.having_proxy.run_a_epoch()
+                # self.groupby_proxy.run_a_epoch()
+                # self.orderby_proxy.run_a_epoch()
+                # self.limit_proxy.run_a_epoch()
+                # self.combination_proxy.run_a_epoch()
 
 
 

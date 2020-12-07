@@ -299,31 +299,24 @@ class DataPreprocessor:
                 X_gt_sup_prefix['X_id'].append(i)
                 X_gt_sup_prefix['K'].append(len(data[i]['sql']['select']))
                 y_gt_prefix['prefix'].append(targets)
-                cache = targets
 
                 # agg
-                targets = []
                 for _ in data[i]['sql']['select']:
-                    targets.append(_[1])
-                X_gt_sup_agg['X_id'].append(i)
-                X_gt_sup_agg['prefix'].append(cache)
-                y_gt_agg['agg'].append(targets)
+                    X_gt_sup_agg['X_id'].append(i)
+                    X_gt_sup_agg['prefix'].append(DataPreprocessor.col_map(_[0]))
+                    y_gt_agg['agg'].append(_[1])
 
                 # com
-                targets = []
                 for _ in data[i]['sql']['select']:
-                    targets.append(_[2])
-                X_gt_sup_com['X_id'].append(i)
-                X_gt_sup_com['prefix'].append(cache)
-                y_gt_com['com'].append(targets)
+                    X_gt_sup_agg['X_id'].append(i)
+                    X_gt_sup_agg['prefix'].append(DataPreprocessor.col_map(_[0]))
+                    y_gt_com['com'].append(_[2])
 
                 # suffix_col
-                targets = []
                 for _ in data[i]['sql']['select']:
-                    targets.append(DataPreprocessor.col_map(_[0]))
-                X_gt_sup_suffix['X_id'].append(i)
-                X_gt_sup_suffix['prefix'].append(cache)
-                y_gt_suffix['suffix'].append(targets)
+                    X_gt_sup_agg['X_id'].append(i)
+                    X_gt_sup_agg['prefix'].append(DataPreprocessor.col_map(_[0]))
+                    y_gt_com['suffix'].append(_[3])
 
             with open(store_folder + '/X_gt_sup_K', 'w') as f:
                 f.write(json.dumps(X_gt_sup_K, ensure_ascii=False, indent=4, separators=(',', ':')))

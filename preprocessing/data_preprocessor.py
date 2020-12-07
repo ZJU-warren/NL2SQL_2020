@@ -269,66 +269,86 @@ class DataPreprocessor:
         :return: None
         """
 
-        def __generate_K():
-            y_k = []
-            for i in range(total):
-                if data[i] is None:
-                    continue
-
-                y_k.append([i, len(data[i]['sql']['select'])])
-
-            with open(store_folder + '/K', 'w') as f:
-                f.write(json.dumps(y_k, ensure_ascii=False, indent=4, separators=(',', ':')))
-
         def __generate_cols():
-            y_prefix = []
-            y_agg = []
-            y_com = []
-            y_suffix = []
+            """ conditions: the conditions """
+            X_gt_sup_K = {'X_id': []}
+            y_gt_K = {'K': []}
+
+            X_gt_sup_prefix = {'X_id': [], 'K': []}
+            y_gt_prefix = {'prefix': []}
+
+            X_gt_sup_com = {'X_id': [], 'prefix': []}
+            y_gt_com = {'com': []}
+
+            X_gt_sup_agg = {'X_id': [], 'prefix': []}
+            y_gt_agg = {'agg': []}
+
+            X_gt_sup_suffix = {'X_id': [], 'prefix': []}
+            y_gt_suffix = {'suffix': []}
 
             for i in range(total):
                 if data[i] is None:
                     continue
+                X_gt_sup_K['X_id'].append(i)
+                y_gt_K['K'].append(len(data[i]['sql']['select']))
 
                 # prefix_col
                 targets = []
                 for _ in data[i]['sql']['select']:
-                    if _[0] == -1:
-                        targets.append(1)
-                    else:
-                        targets.append(_[0] + 1)
-                y_prefix.append([i, targets])
+                    targets.append(DataPreprocessor.col_map(_[0]))
+                X_gt_sup_prefix['X_id'].append(i)
+                X_gt_sup_prefix['K'].append(len(data[i]['sql']['select']))
+                y_gt_prefix['prefix'].append(targets)
+                cache = targets
 
                 # agg
                 targets = []
                 for _ in data[i]['sql']['select']:
                     targets.append(_[1])
-                y_agg.append([i, targets])
+                X_gt_sup_agg['X_id'].append(i)
+                X_gt_sup_agg['prefix'].append(cache)
+                y_gt_agg['agg'].append(targets)
 
                 # com
                 targets = []
                 for _ in data[i]['sql']['select']:
                     targets.append(_[2])
-                y_com.append([i, targets])
+                X_gt_sup_com['X_id'].append(i)
+                X_gt_sup_com['prefix'].append(cache)
+                y_gt_com['com'].append(targets)
 
                 # suffix_col
                 targets = []
                 for _ in data[i]['sql']['select']:
-                    if _[3] == 0:
-                        targets.append(0)
-                    else:
-                        targets.append(_[3] + 1)
-                y_suffix.append([i, targets])
+                    targets.append(DataPreprocessor.col_map(_[0]))
+                X_gt_sup_suffix['X_id'].append(i)
+                X_gt_sup_suffix['prefix'].append(cache)
+                y_gt_suffix['suffix'].append(targets)
 
-            # store
-            with open(store_folder + '/prefix', 'w') as f:
-                f.write(json.dumps(y_prefix, ensure_ascii=False, indent=4, separators=(',', ':')))
-            with open(store_folder + '/agg', 'w') as f:
-                f.write(json.dumps(y_agg, ensure_ascii=False, indent=4, separators=(',', ':')))
-            with open(store_folder + '/com', 'w') as f:
-                f.write(json.dumps(y_com, ensure_ascii=False, indent=4, separators=(',', ':')))
-            with open(store_folder + '/suffix', 'w') as f:
-                f.write(json.dumps(y_suffix, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/X_gt_sup_K', 'w') as f:
+                f.write(json.dumps(X_gt_sup_K, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_K', 'w') as f:
+                f.write(json.dumps(y_gt_K, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_prefix', 'w') as f:
+                f.write(json.dumps(X_gt_sup_prefix, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_prefix', 'w') as f:
+                f.write(json.dumps(y_gt_prefix, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_com', 'w') as f:
+                f.write(json.dumps(X_gt_sup_com, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_com', 'w') as f:
+                f.write(json.dumps(X_gt_sup_com, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_agg', 'w') as f:
+                f.write(json.dumps(X_gt_sup_agg, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_agg', 'w') as f:
+                f.write(json.dumps(X_gt_sup_agg, ensure_ascii=False, indent=4, separators=(',', ':')))
+
+            with open(store_folder + '/X_gt_sup_suffix', 'w') as f:
+                f.write(json.dumps(X_gt_sup_suffix, ensure_ascii=False, indent=4, separators=(',', ':')))
+            with open(store_folder + '/y_gt_suffix', 'w') as f:
+                f.write(json.dumps(y_gt_suffix, ensure_ascii=False, indent=4, separators=(',', ':')))
 
         # 0.
         print('-------------------- generate select part--------------------')
@@ -338,10 +358,7 @@ class DataPreprocessor:
         data = DataPreprocessor.__filter(raw_data)
         total = len(data)
 
-        # 2. the number of columns
-        __generate_K()
-
-        # 3. the value of columns
+        # 2. the value of columns
         __generate_cols()
 
     @staticmethod

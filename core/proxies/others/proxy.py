@@ -69,48 +69,49 @@ class ModuleProxy:
         self.step = 0
         self.start = 0
 
+    def predict(self, top=1):
+        y_pd_score = self.target_net(self.train_data_holder, self.X_id)
+        print(y_pd_score)
+
     def run_a_epoch(self):
-        if self.mode:
-            data_index = list(range(0, self.total))
+        # only for train
+
+        self.last_acc = 0
+        self.avg_loss = 0
+        step = 0
+
+        while True:
+            if self.step == 0:
+                self.last_acc *= step
+
+            # calculate the start, end of this batch
+            end = min(self.total, self.start + self.batch_size)
+            # print('[%d, %d)' % (self.start, end))
+            data_index = list(range(self.start, end))
+
+            # forward
             self.forward(data_index)
 
-        else:
-            self.last_acc = 0
-            self.avg_loss = 0
-            step = 0
+            # step
+            if self.step == 0:
+                step += 1
+                self.last_acc /= step
 
-            while True:
-                if self.step == 0:
-                    self.last_acc *= step
+            # update for next batch
+            self.start = end % self.total
 
-                # calculate the start, end of this batch
-                end = min(self.total, self.start + self.batch_size)
-                # print('[%d, %d)' % (self.start, end))
-                data_index = list(range(self.start, end))
+            if self.start == 0:
+                break
 
-                # forward
-                self.forward(data_index)
+        if self.last_acc > 0.8 and self.best_acc < self.last_acc:
+            print('=============== save the best model [%s] with acc %f ================='
+                  % (self.__class__.__name__, self.last_acc))
+            self.save_model()
+            self.best_acc = self.last_acc
+            # self.load_model()
 
-                # step
-                if self.step == 0:
-                    step += 1
-                    self.last_acc /= step
-
-                # update for next batch
-                self.start = end % self.total
-
-                if self.start == 0:
-                    break
-
-            if self.last_acc > 0.8 and self.best_acc < self.last_acc:
-                print('=============== save the best model [%s] with acc %f ================='
-                      % (self.__class__.__name__, self.last_acc))
-                self.save_model()
-                self.best_acc = self.last_acc
-                # self.load_model()
-
-            print('- [%s] with loss %f and acc %f in the last epoch.'
-                  % (self.__class__.__name__, self.avg_loss, self.last_acc))
+        print('- [%s] with loss %f and acc %f in the last epoch.'
+              % (self.__class__.__name__, self.avg_loss, self.last_acc))
 
     def forward(self, data_index):
         y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index])

@@ -35,6 +35,9 @@ class SelectColComNetProxy(ModuleProxy):
                         X_id.append(self.X_id[i])
             self.X_id = np.array(X_id, dtype=np.int32)
 
+            # init data
+            self.total = self.X_id.shape[0]
+
     def predict(self, top=1, keyword=None, target_path=None, extra=None):
         result = super().predict(top, 'com', '/Select/com')
 

@@ -23,8 +23,8 @@ class HavingCondPrefixNetProxy(ModuleProxy):
         self.sel_col_for_loss = torch.zeros((self.y_gt.shape[0], max_columns_number)).cuda(cuda_id)
         for i in range(self.y_gt.shape[0]):
             self.sel_col_for_loss[i, self.y_gt[i]] = 1
-        self.header_mask = torch.zeros((self.y_gt.shape[0], max_columns_number)).cuda(cuda_id)
 
+        self.header_mask = torch.zeros((self.y_gt.shape[0], max_columns_number)).cuda(cuda_id)
         for i in range(self.y_gt.shape[0]):
                 col_num = self.train_data_holder.col_num(i)
                 self.header_mask[i, :col_num] = 1
@@ -38,6 +38,10 @@ class HavingCondPrefixNetProxy(ModuleProxy):
             self.X_id = np.array(info['X_id'], dtype=np.int32)
             self.prefix_N = np.array(info['N'], dtype=np.int32)
 
+        self.header_mask = torch.zeros((self.X_id.shape[0], max_columns_number)).cuda(cuda_id)
+        for i in range(self.X_id.shape[0]):
+            col_num = self.test_data_holder.col_num(self.X_id[i])
+            self.header_mask[i, :col_num] = 1
         # init data
         self.total = self.X_id.shape[0]
 

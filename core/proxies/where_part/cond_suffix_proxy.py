@@ -12,8 +12,8 @@ import numpy as np
 class WhereCondSuffixNetProxy(ModuleProxy):
     def __init__(self, base_net, predict_mode=False, train_data_holder=None,
                  valid_data_holder=None, test_data_holder=None):
-        super(WhereCondSuffixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder,
-                                                       test_data_holder)
+        super(WhereCondSuffixNetProxy, self).__init__(predict_mode, train_data_holder,
+                                                      valid_data_holder, test_data_holder)
         self._init_env(base_net, CondSuffixNet, 'Where', 'suffix')
 
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
@@ -58,11 +58,15 @@ class WhereCondSuffixNetProxy(ModuleProxy):
             self.prefix = np.array(prefix, dtype=np.int32)
             self.X_id = np.array(X_id, dtype=np.int32)
 
+        self.header_mask = torch.zeros((self.X_id.shape[0], max_columns_number)).cuda(cuda_id)
+        for i in range(self.X_id.shape[0]):
+            col_num = self.test_data_holder.col_num(self.X_id[i])
+            self.header_mask[i, :col_num] = 1
         # init data
         self.total = self.X_id.shape[0]
 
     def predict(self, top=1, keyword=None, target_path=None, extra=None):
-        result = super().predict(top, 'agg', '/Where/suffix', extra=self.prefix)
+        result = super().predict(top, 'suffix', '/Where/suffix', extra=self.prefix)
 
     def forward(self, data_index):
         y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index], self.prefix[data_index])

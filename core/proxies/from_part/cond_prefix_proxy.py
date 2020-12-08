@@ -55,4 +55,4 @@ class CondPrefixNetProxy(ModuleProxy):
         return super().backward(y_pd, data_index, loss, top=(self.prefix_N, self.valid_prefix_N))
 
     def predict(self, top=1, keyword=None, target_path=None):
-        result = super().predict(self.prefix_N, 'prefix', '/Select/prefix')
+        result = super().predict(self.prefix_N, 'prefix', '/From/prefix')

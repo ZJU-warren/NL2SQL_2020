@@ -1,247 +1,163 @@
 import json
 import os
-
-result_path = "/Users/cindy/others/Result/"
-datapath = result_path+'data.json'
-schema_path = result_path+'db_schema.json'
-print(os.getcwd())
-qd = "question_id"
+from tools.utils import *
 
 
-def initDic(dataPath):
-    idToDB = {}
+class JsonGenerator:
+    def __init__(self, file_path, data_path, schema_path):
+        self.file_path = file_path
+        self.data_path = data_path
+        self.schema_path = schema_path
+        self.self.qid = "question_id"
+        self.idToDB = initDic(datapath)
+        self.dbToColumn = getContent(schema_path)
 
-    # 加载测试数据，得到其 db_name
-    with open(dataPath, 'r', encoding='UTF-8') as f:
-        test_data = json.load(f)
-        for each in test_data:
-            idToDB[each["question_id"]] = each["db_name"]
+    def gen_select(self):
+        with open(self.file_path + 'Select/K', 'r') as f:
+            select_k = json.load(f)
+        with open(self.file_path + 'Select/prefix', 'r') as f:
+            select_prefix = json.load(f)
+        with open(self.file_path + 'Select/agg', 'r') as f:
+            select_agg = json.load(f)
+        with open(self.file_path + 'Select/com', 'r') as f:
+            select_com = json.load(f)
+        with open(self.file_path + 'Select/suffix', 'r') as f:
+            select_suffix = json.load(f)
+        select_prefix = index_trans(select_prefix, 'prefix')
+        select_suffix = index_trans(select_suffix, 'suffix')
 
-    return idToDB
+        sql = {}
+        # select
+        for i in select_k[self.qid]:
+            sql[i] = {'K': [], 'prefix': [], 'agg': [], 'com': [], 'suffix': []}
+        sql = rebuild(sql, select_k, 'K', True)
+        sql = rebuild(sql, select_prefix, 'prefix', True)
+        sql = rebuild(sql, select_agg, 'agg')
+        sql = rebuild(sql, select_com, 'com')
+        sql = rebuild(sql, select_suffix, 'suffix')
+        res = {}
+        for k in sql.keys():
+            num, prefix, agg, com, suffix = sql[k]['K'], sql[k]['prefix'], sql[k]['agg'], sql[k]['com'], sql[k][
+                'suffix']
+            if not num: continue
+            select = [[0, 0, 0, 0] for _ in range(num)]
+            select = select_insert(select, prefix, 0)
+            select = select_insert(select, agg, 1)
+            select = select_insert(select, com, 2, 1)
+            select = select_insert(select, suffix, 3, 1)
+            res[k] = select
 
+        return res
 
-def getContent(schema_path):
-    dbToColumn = {}
+    def gen_orderBy(self):
+        with open(self.file_path + 'OrderBy/col', 'r') as f:
+            col = json.load(f)
+        with open(self.file_path + 'OrderBy/order', 'r') as f:
+            order = json.load(f)
+        col = index_trans(col, 'col')
+        sql = {}
+        for i in range(len(order[self.qid])):
+            sql[order[self.qid][i]] = {'col': [], 'order': order['order'][i]}
+        for i in range(len(col[self.qid])):
+            sql[col[self.qid][i]]['col'] = col['col'][i]
+        res = {}
+        for k in sql.keys():
+            t1, t2 = sql[k]['order'], sql[k]['col']
+            if not t1:
+                res[k] = []
+            else:
+                s = "ASC" if t1 == 1 else "DESC"
+                res[k] = [s, [[t2, 0, 0, 0]]]
+        return res
 
-    with open(schema_path, 'r', encoding='UTF-8') as f:
-        schema = json.load(f)
+    def gen_groupBy(self):
+        with open(self.file_path + 'GroupBy/col', 'r') as f:
+            col = json.load(f)
+        with open(self.file_path + 'GroupBy/need', 'r') as f:
+            need = json.load(f)
+        col = index_trans(col, 'col')
+        res = {}
+        sql = {}
+        for i in range(len(need[self.qid])):
+            sql[need[self.qid][i]] = {'need': need['need'][i], 'col': []}
+        for i in range(len(col[self.qid])):
+            sql[col[self.qid][i]]['col'].append(col['col'][i])
 
-    # dbToColumn["db_name"][col_idx] = [table_id,col_name]
-    for each in schema:
-        db = each['db_name']
-        dbToColumn[db] = {}
-        # pair ["化学_0", "化学id"]
-        for idx, pair in enumerate(each['col_name'][1:]):
-            dbToColumn[db][idx + 1] = [pair[0], pair[1]]
+        # 有待商榷
+        for k in sql.keys():
+            if not sql[k]['need']:
+                res[k] = []
+            else:
+                res[k] = sql[k]['col']
+        return res
 
-    return dbToColumn
+    def gen_from(self, select_info, where_info=None, having_info=None):
+        with open(self.file_path + 'From/J', 'r') as f:
+            J = json.load(f)
+        with open(self.file_path + 'From/N', 'r') as f:
+            N = json.load(f)
+        with open(self.file_path + 'From/prefix', 'r') as f:
+            prefix = json.load(f)
+        with open(self.file_path + 'From/suffix', 'r') as f:
+            suffix = json.load(f)
+        prefix = index_trans(prefix, 'prefix')
+        suffix = index_trans(suffix, 'suffix')
+        res = {}
+        sql = {}
 
-def trans(val):
-    if val == 0:
-        return -999
-    if val == 1:
-        return -1
-    return val-1
-
-
-def index_trans(value, key):
-    for i in range(len(value[key])):
-        if type(value[key][i]) == int:
-            value[key][i] = trans(value[key][i])
-        else:
-            for j in range(len(value[key][i])):
-                value[key][i][j] = trans(value[key][i][j])
-    return value
-
-
-def rebuild(sql, source, key, mode=False):
-    for i in range(len(source[qd])):
-        if mode:
-            sql[source[qd][i]][key] = source[key][i]
-        else:
-            sql[source[qd][i]][key].append(source[key][i])
-    return sql
-
-
-def select_insert(target, val, k, filt=-1):
-    for i in range(len(val)):
-        if filt != -1 and i > 0:
-            break
-        target[i][k] = val[i]
-    return target
-
-
-def gen_select():
-    with open(result_path + 'Select/K', 'r') as f:
-        select_k = json.load(f)
-    with open(result_path + 'Select/prefix', 'r') as f:
-        select_prefix = json.load(f)
-    with open(result_path + 'Select/agg', 'r') as f:
-        select_agg = json.load(f)
-    with open(result_path + 'Select/com', 'r') as f:
-        select_com = json.load(f)
-    with open(result_path + 'Select/suffix', 'r') as f:
-        select_suffix = json.load(f)
-    select_prefix = index_trans(select_prefix, 'prefix')
-    select_suffix = index_trans(select_suffix, 'suffix')
-
-    sql = {}
-    # select
-    for i in select_k[qd]:
-        sql[i] = {'K': [],'prefix': [], 'agg': [], 'com': [], 'suffix': []}
-    sql = rebuild(sql, select_k, 'K', True)
-    sql = rebuild(sql, select_prefix, 'prefix', True)
-    sql = rebuild(sql, select_agg, 'agg')
-    sql = rebuild(sql, select_com, 'com')
-    sql = rebuild(sql, select_suffix, 'suffix')
-    res = {}
-    for k in sql.keys():
-        num, prefix, agg, com, suffix = sql[k]['K'],sql[k]['prefix'], sql[k]['agg'], sql[k]['com'], sql[k]['suffix']
-        if not num: continue
-        select = [[0, 0, 0, 0] for _ in range(num)]
-        select = select_insert(select, prefix, 0)
-        select = select_insert(select, agg, 1)
-        select = select_insert(select, com, 2, 1)
-        select = select_insert(select, suffix, 3, 1)
-        res[k] = select
-
-    return res
-
-
-def gen_orderBy():
-    with open(result_path + 'OrderBy/col', 'r') as f:
-        col = json.load(f)
-    with open(result_path + 'OrderBy/order', 'r') as f:
-        order = json.load(f)
-    col = index_trans(col, 'col')
-    sql = {}
-    for i in range(len(order[qd])):
-        sql[order[qd][i]] = {'col': [], 'order': order['order'][i]}
-    for i in range(len(col[qd])):
-        sql[col[qd][i]]['col'] = col['col'][i]
-    res = {}
-    for k in sql.keys():
-        t1, t2 = sql[k]['order'], sql[k]['col']
-        if not t1:
-            res[k] = []
-        else:
-            s = "ASC" if t1 == 1 else "DESC"
-            res[k] = [s, [[t2, 0, 0, 0]]]
-    return res
-
-
-def gen_groupBy():
-    with open(result_path + 'GroupBy/col', 'r') as f:
-        col = json.load(f)
-    with open(result_path + 'GroupBy/need', 'r') as f:
-        need = json.load(f)
-    col = index_trans(col, 'col')
-    res = {}
-    sql = {}
-    for i in range(len(need[qd])):
-        sql[need[qd][i]] = {'need': need['need'][i], 'col':[]}
-    for i in range(len(col[qd])):
-        sql[col[qd][i]]['col'].append(col['col'][i])
-
-    # 有待商榷
-    for k in sql.keys():
-        if not sql[k]['need']:
-            res[k] = []
-        else:
-            res[k] = sql[k]['col']
-    return res
-
-
-def gen_from(select_info, where_info=None, having_info=None):
-    with open(result_path + 'From/J', 'r') as f:
-        J = json.load(f)
-    with open(result_path + 'From/N', 'r') as f:
-        N = json.load(f)
-    with open(result_path + 'From/prefix', 'r') as f:
-        prefix = json.load(f)
-    with open(result_path + 'From/suffix', 'r') as f:
-        suffix = json.load(f)
-    prefix = index_trans(prefix, 'prefix')
-    suffix = index_trans(suffix, 'suffix')
-    res = {}
-    sql = {}
-
-    for i in N[qd]:
-        sql[i] = {'N': [],'prefix': [], 'suffix': []}
-    sql = rebuild(sql, N, 'N', True)
-    sql = rebuild(sql, prefix, 'prefix', True)
-    sql = rebuild(sql, suffix, 'suffix')
-    for k in sql.keys():
-        num, prefix, suffix = sql[k]['N'], sql[k]['prefix'], sql[k]['suffix']
-        if not num:
-            res[k] = {}
-            continue
-        select = [[0, 0, 2, 0, 0, 0,{}] for _ in range(num)]
-        select = select_insert(select, prefix, 0)
-        select = select_insert(select, suffix, 5)
-        res[k] = {'conds': select, 'table_ids': []}
-
-    idToDB = initDic(datapath)
-    dbToCol = getContent(schema_path)
-    for k in select_info.keys():
-        db = idToDB[k]
-        table_ids = set()
-        for it in select_info[k]:
-            if it[0] != -1:
-                try:
-                    table_id = dbToCol[db][it[0]]
-                    table_ids.add(table_id[0])
-                except: pass
-            if it[3] != 0:
-                try:
-                    table_id = dbToCol[db][it[0]]
-                    table_ids.add(table_id[0])
-                except: pass
-        tmp = [['table_id', it] for it in table_ids]
-        res[k]['table_ids'] = tmp
-
-        if not where_info: continue
-        for it in where_info[k]:
-            if type(it) != list:
+        for i in N[self.qid]:
+            sql[i] = {'N': [], 'prefix': [], 'suffix': []}
+        sql = rebuild(sql, N, 'N', True)
+        sql = rebuild(sql, prefix, 'prefix', True)
+        sql = rebuild(sql, suffix, 'suffix')
+        for k in sql.keys():
+            num, prefix, suffix = sql[k]['N'], sql[k]['prefix'], sql[k]['suffix']
+            if not num:
+                res[k] = {}
                 continue
-            if it[0] != -999:
+            select = [[0, 0, 2, 0, 0, 0, {}] for _ in range(num)]
+            select = select_insert(select, prefix, 0)
+            select = select_insert(select, suffix, 5)
+            res[k] = {'conds': select, 'table_ids': []}
+
+        for k in select_info.keys():
+            db = self.idToDB[k]
+            columns = []
+            table_ids = set()
+            columns.extend([it[0] for it in select_info[k]])
+            columns.extend([it[3] for it in select_info[k]])
+            columns.extend([it[0] for it in where_info[k]])
+            columns.extend([it[5] for it in where_info[k]])
+            columns.extend([it[0] for it in having_info[k]])
+            columns.extend([it[5] for it in having_info[k]])
+
+            for i in columns:
+                if i == -1 or i == 0 or i==-999:
+                    continue
                 try:
-                    table_id = dbToCol[db][it[0]]
-                    table_ids.add(table_id[0])
-                except: pass
-            if it[5] != -999 and it[5] != 0:
-                try:
-                    table_id = dbToCol[db][it[0]]
-                    table_ids.add(table_id[0])
-                except: pass
-        for it in having_info[k]:
-            if type(it) != list:
-                continue
-            if it[0] != -999:
-                try:
-                    table_id = dbToCol[db][it[0]]
-                    table_ids.add(table_id[0])
-                except: pass
-            if it[5] != -999 and it[5]!= 0:
-                try:
-                    table_id = dbToCol[db][it[0]]
-                    table_ids.add(table_id[0])
-                except: pass
+                    table_ids.add(self.dbToColumn[db][i])
+                except:
+                    print("error when finding from table id part, ", db, i)
 
-        tmp = [['table_id', it] for it in table_ids]
-        res[k]['table_ids'] = tmp
+            res[k]['table_ids'] = [['table_id', it] for it in table_ids]
 
-    return res
+        return res
 
+    def gen_others(self):
+        with open(self.file_path + 'Where/where_clause.json', 'r') as f:
+            where = json.load(f)
+        with open(self.file_path + 'Having/having_clause.json', 'r') as f:
+            having = json.load(f)
+        with open(self.file_path + 'Limit/limit_clause.json', 'r') as f:
+            limit = json.load(f)
+        return where, having, limit
 
-def put_all_together(select, orderBy, limit, groupBy, From, ):
-    idToDB = initDic(datapath)
-    for i in select.keys():
-        pass
+    def merge_sql(self):
+        select_json, order_json, group_json = self.gen_select(), self.gen_orderBy(), self.gen_groupBy()
+        where_json, having_json, limit_json = self.gen_others()
+        from_json = self.gen_from(select_json, where_json, having_json)
+        sqls = []
+        for k in select_json.keys():
+            sql = {}
+            sql['']
 
-
-select = gen_select()
-orderBy = gen_orderBy()
-groupBy = gen_groupBy()
-From = gen_from(select)
-print("end")

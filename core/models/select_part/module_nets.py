@@ -48,21 +48,9 @@ class SelAggNet(nn.Module):
         if gpu:
             self.cuda(cuda_id)
 
-    def forward(self,data_holder, X_id, sel_cols):
+    def forward(self, data_holder, X_id, sel_cols):
         cls, out, col_att = self.base_net(data_holder, X_id)
-
-        b = len(out)
-        col_len = [len(col) for col in sel_cols]
-        t = sum(col_len)
-        if self.gpu:
-            score = torch.zeros(t, self.C).cuda(cuda_id)
-        else:
-            score = torch.zeros(t, self.C)
-        st = 0
-        for i in range(b):
-            ed = st+col_len[i]
-            score[st:ed, :] = self.out(out[i, sel_cols[i]])
-            st = ed
+        score = self.out(out[:, sel_cols].squeeze())
         return score
 
 

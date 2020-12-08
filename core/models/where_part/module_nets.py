@@ -1,5 +1,6 @@
 import torch.nn as nn
 from GlobalParameters import cuda_id, max_columns_number
+import torch
 
 
 class CondOperationNet(nn.Module):
@@ -32,9 +33,12 @@ class CondComNet(nn.Module):
         if gpu:
             self.cuda(cuda_id)
 
-    def forward(self, data_holder, X_id):
+    def forward(self, data_holder, X_id, sel_cols):
         cls, out, col_att = self.base_net(data_holder, X_id)
-        score = self.linear(cls)
+        score = torch.empty((len(sel_cols), 768)).cuda()
+        for i in range(len(sel_cols)):
+            score[i] = out[i, sel_cols[i], :].squeeze()
+        score = self.out(score)
         return score
 
 
@@ -50,7 +54,10 @@ class CondEqNet(nn.Module):
         if gpu:
             self.cuda(cuda_id)
 
-    def forward(self, data_holder, X_id):
+    def forward(self, data_holder, X_id, sel_cols):
         cls, out, col_att = self.base_net(data_holder, X_id)
-        score = self.linear(cls)
+        score = torch.empty((len(sel_cols), 768)).cuda()
+        for i in range(len(sel_cols)):
+            score[i] = out[i, sel_cols[i], :].squeeze()
+        score = self.out(score)
         return score

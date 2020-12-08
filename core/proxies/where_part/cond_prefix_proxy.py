@@ -26,8 +26,8 @@ class CondPrefixNetProxy(ModuleProxy):
         self.header_mask = torch.zeros((self.y_gt.shape[0], max_columns_number)).cuda(cuda_id)
 
         for i in range(self.y_gt.shape[0]):
-                col_num = self.train_data_holder.col_num(i)
-                self.header_mask[i, :col_num] = 1
+            col_num = self.train_data_holder.col_num(i)
+            self.header_mask[i, :col_num] = 1
 
     def _init_test(self, base_net, target_net, part_name, file_name, tensor=False):
         super()._init_test(base_net, target_net, part_name, file_name)

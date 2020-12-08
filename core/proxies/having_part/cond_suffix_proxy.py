@@ -45,4 +45,4 @@ class CondSuffixNetProxy(ModuleProxy):
         return super().backward(y_pd, data_index, loss)
 
     def predict(self, top=1, keyword=None, target_path=None):
-        result = super().predict(self.prefix_N, 'prefix', '/Having/suffix')
+        result = super().predict(self.prefix_N, 'suffix', '/Having/suffix')

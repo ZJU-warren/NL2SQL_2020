@@ -5,6 +5,7 @@ from core.proxies.orderby_proxy import OrderByProxy
 from core.proxies.combination_proxy import CombinationProxy
 from core.proxies.select_proxy import SelectProxy
 from core.proxies.limit_proxy import LimitProxy
+from core.proxies.having_proxy import HavingProxy
 from core.models.base import Base
 import json
 import DataLinkSet as DLSet
@@ -44,8 +45,8 @@ class MainProxy:
 
         # self.select_proxy = SelectProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
         # self.from_proxy = FromProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
-        self.where_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
-        # self.having_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        # self.where_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        self.having_proxy = HavingProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
         # self.groupby_proxy = GroupByProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
         # self.orderby_proxy = OrderByProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
         # self.limit_proxy = LimitProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
@@ -55,8 +56,8 @@ class MainProxy:
         if self.mode:
             # self.select_proxy.predict()
             # self.from_proxy.predict()
-            self.where_proxy.predict()
-            # self.having_proxy.predict()
+            # self.where_proxy.predict()
+            self.having_proxy.predict()
             # self.groupby_proxy.predict()
             # self.orderby_proxy.predict()
             # self.limit_proxy.predict()
@@ -65,8 +66,8 @@ class MainProxy:
             for _ in range(self.epoch):
                 # self.select_proxy.run_a_epoch()
                 # self.from_proxy.run_a_epoch()
-                self.where_proxy.run_a_epoch()
-                # self.having_proxy.run_a_epoch()
+                # self.where_proxy.run_a_epoch()
+                self.having_proxy.run_a_epoch()
                 # self.groupby_proxy.run_a_epoch()
                 # self.orderby_proxy.run_a_epoch()
                 # self.limit_proxy.run_a_epoch()

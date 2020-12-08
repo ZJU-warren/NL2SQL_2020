@@ -2,7 +2,7 @@ import json
 import os
 from tools.utils import *
 
-print(os.getcwd())
+
 class JsonGenerator:
     def __init__(self, file_path, data_path, schema_path):
         self.file_path = file_path

@@ -122,7 +122,7 @@ class DataPreprocessor:
         db_name = []
         for each in data:
             temp = each['question'] + db_info[each['db_name']]
-            if len(temp) > 505:#!!!!
+            if len(temp) > 505:
                 temp = '[unused1]'.join(temp[:505].split('[unused1]')[: -1])
 
             query_with_db_info.append(temp)

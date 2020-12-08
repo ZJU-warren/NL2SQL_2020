@@ -11,6 +11,8 @@ class DataGenerator:
         generate_new_folder(DLSet.base_folder_link + '/' + store_target)
         generate_new_folder(DLSet.raw_folder_link % store_target)
 
+        print('~: %d' % len(data))
+
         # store
         with open(DLSet.raw_folder_link % store_target + '/data.json', 'w') as f:
             f.write(json.dumps(data, ensure_ascii=False, indent=4, separators=(',', ':')))

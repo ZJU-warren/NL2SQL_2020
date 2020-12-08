@@ -32,8 +32,7 @@ class ModuleProxy:
 
         # init data
         with open(DLSet.main_folder_link % 'Train' + '/%s/X_gt_sup_%s' % (part_name, file_name), 'r') as f:
-            info = json.load(f)
-            self.X_id = np.array(info['X_id'])
+            self.X_id = np.array(json.load(f)['X_id'])
 
         with open(DLSet.main_folder_link % 'Train' + '/%s/y_gt_%s' % (part_name, file_name), 'r') as f:
             if tensor:
@@ -42,13 +41,15 @@ class ModuleProxy:
                 self.y_gt = np.array(json.load(f)[file_name], dtype=object)
 
         with open(DLSet.main_folder_link % 'Validation' + '/%s/X_gt_sup_%s' % (part_name, file_name), 'r') as f:
-            self.valid_X_id = np.array(info['X_id'])
+            self.valid_X_id = np.array(json.load(f)['X_id'])
 
         with open(DLSet.main_folder_link % 'Validation' + '/%s/y_gt_%s' % (part_name, file_name), 'r') as f:
             if tensor:
                 self.valid_y_gt = torch.Tensor(json.load(f)[file_name]).long()
             else:
                 self.valid_y_gt = np.array(json.load(f)[file_name], dtype=object)
+        print(len(self.valid_X_id), len(self.valid_y_gt))
+
 
         # epoch init
         self.total = self.y_gt.shape[0]
@@ -56,7 +57,7 @@ class ModuleProxy:
         self.batch_size = max(self.total // self.batch, 5)
         self.optimizer = optim.Adam(self.target_net.parameters(), lr=learning_rate)
 
-    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None, batch=2000):
+    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None, batch=1500):
         self.mode = predict_mode
         self.batch = batch
         self.train_data_holder = train_data_holder
@@ -74,7 +75,6 @@ class ModuleProxy:
 
     def predict(self, top=1, keyword=None, target_path=None, extra=None):
         y_pd_score = []
-        self.target_net.eval()
 
         i = 0
         while True:
@@ -97,8 +97,7 @@ class ModuleProxy:
             if start % 100 == 0:
                 print("predict: [%d, %d]" % (start, end))
 
-            if end == self.total:#!!!!!
-            # if end == 20 or end == self.total:
+            if end == self.total:
                 break
 
             i += 1
@@ -112,8 +111,7 @@ class ModuleProxy:
             keyword: [],
         }
 
-        # for _ in range(self.total):#!!!!!
-        for _ in range(min(20, self.total)):
+        for _ in range(self.total):
             question_id = self.test_data_holder.get_question_id(self.X_id[_])
             prediction['X_id'].append(int(self.X_id[_].item()))
             prediction['question_id'].append(question_id)
@@ -129,11 +127,11 @@ class ModuleProxy:
         return result
 
     def run_a_epoch(self):
+        print('Run %s, total = %d, batchsize = %d' % (self.__class__.__name__, self.total, self.batch_size))
         if self.need_train is False:
             return
 
         # only for train
-
         self.last_acc = 0
         self.avg_loss = 0
 
@@ -160,17 +158,14 @@ class ModuleProxy:
             if self.start == 0:
                 break
 
-            # break #!!!!!
-
-        if self.last_acc > 0.8 and self.best_acc < self.last_acc: #!!!!!
-        # if True:
+        if self.last_acc > 0.8 and self.best_acc < self.last_acc:
             print('=============== save the best model [%s] with acc %f ================='
                   % (self.__class__.__name__, self.last_acc))
             self.save_model()
             self.best_acc = self.last_acc
             # self.load_model()
 
-            if self.last_acc > 0.95: #!!!!!
+            if self.last_acc > 0.95:
                 self.need_train = False
 
         print('- [%s] with loss %f and acc %f in the last epoch.'
@@ -189,7 +184,7 @@ class ModuleProxy:
 
         acc_value_valid = -1
 
-        if self.step % 10 == 0:
+        if self.step % 1 == 0:
             print('-- loss_cpu', self.loss.data.cpu().numpy())
             self.optimizer.step()
             self.optimizer.zero_grad()
@@ -205,11 +200,9 @@ class ModuleProxy:
 
             # @validation
             total_valid = len(self.valid_y_gt)
-            # data_index = random.sample([i for i in range(total_valid)], 15) # !!!!
-            data_index = random.sample([i for i in range(total_valid)], 2)
-            # data_index = [i for i in range(total_valid)]
-            gt = self.valid_y_gt[data_index]
+            data_index = random.sample([i for i in range(total_valid)], 8)
 
+            gt = self.valid_y_gt[data_index]
             y_pd_valid = self.target_net(self.valid_data_holder, self.valid_X_id[data_index])
 
             if self.header_mask is not None:

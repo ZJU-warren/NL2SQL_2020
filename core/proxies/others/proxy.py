@@ -177,14 +177,13 @@ class ModuleProxy:
 
     def backward(self, y_pd, data_index, loss, top=None):
         self.avg_loss = (self.avg_loss * self.step + loss.data.cpu().numpy()) / (self.step + 1)
-
         self.step += 1
         self.loss = loss
         self.loss.backward()
 
         acc_value_valid = -1
 
-        if self.step % 1 == 0:
+        if self.step % 10 == 0:
             print('-- loss_cpu', self.loss.data.cpu().numpy())
             self.optimizer.step()
             self.optimizer.zero_grad()

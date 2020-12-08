@@ -80,11 +80,12 @@ class SelSuffixColNet(nn.Module):
     def __init__(self, base_net, hidden=768, gpu=True):
         super(SelSuffixColNet, self).__init__()
         self.base_net = base_net
-        self.linear = nn.Sequential(nn.Dropout(0.3), nn.Linear(hidden, self.MAX_NUM_OF_COL))
+        self.linear = nn.Sequential(nn.Dropout(0.3), nn.Linear(hidden, 1))
 
         if gpu:
             self.cuda(cuda_id)
 
     def forward(self, data_holder, X_id):
         cls, out, col_att = self.base_net(data_holder, X_id)
-        return self.linear(cls)
+        return self.linear(out).squeeze(-1)
+

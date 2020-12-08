@@ -48,7 +48,7 @@ class CondSuffixNet(nn.Module):
         super(CondSuffixNet, self).__init__()
         self.base_net = base_net
         self.hidden = hidden
-        self.out = nn.Sequential(nn.LayerNorm(hidden), nn.Dropout(0.2), nn.Linear(hidden, 1), nn.Sigmoid())
+        self.out = nn.Linear(hidden, self.MAX_NUM_OF_COL)
         # self.out = nn.Sequential(nn.Dropout(0.3), nn.Linear(hidden, self.MAX_NUM_OF_COL), nn.Sigmoid())
         if gpu:
             self.cuda(cuda_id)

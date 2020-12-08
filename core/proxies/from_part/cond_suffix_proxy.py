@@ -7,6 +7,7 @@ from tools.metrics import acc
 import random
 import json
 import numpy as np
+from torch.nn import CrossEntropyLoss
 
 
 class FromCondSuffixNetProxy(ModuleProxy):
@@ -14,7 +15,7 @@ class FromCondSuffixNetProxy(ModuleProxy):
                  valid_data_holder=None, test_data_holder=None):
         super(FromCondSuffixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder,
                                                      test_data_holder)
-        self._init_env(base_net, CondSuffixNet, 'From', 'suffix')
+        self._init_env(base_net, CondSuffixNet, 'From', 'suffix', True)
 
     def predict(self, top=1, keyword=None, target_path=None, extra=None):
         result = super().predict(top, 'suffix', '/From/suffix', extra=self.prefix)
@@ -83,12 +84,15 @@ class FromCondSuffixNetProxy(ModuleProxy):
         return self.backward(y_pd_score, data_index, None)
 
     def backward(self, y_pd, data_index, loss, top=1):
-        sel_col_label = self.sel_col_for_loss[data_index]
+        # sel_col_label = self.sel_col_for_loss[data_index]
+        #
+        # col_raw_loss = 3 * sel_col_label * torch.log(y_pd + 1e-10) \
+        #                + (1 - sel_col_label) * torch.log(1 - y_pd + 1e-10)
+        # col_mask_loss = col_raw_loss * self.header_mask[data_index]
+        # loss = -torch.sum(col_mask_loss) / torch.sum(self.header_mask[data_index])
 
-        col_raw_loss = 3 * sel_col_label * torch.log(y_pd + 1e-10) \
-                       + (1 - sel_col_label) * torch.log(1 - y_pd + 1e-10)
-        col_mask_loss = col_raw_loss * self.header_mask[data_index]
-        loss = -torch.sum(col_mask_loss) / torch.sum(self.header_mask[data_index])
+        gt = self.y_gt[data_index]
+        loss = CrossEntropyLoss()(y_pd, gt.cuda(cuda_id))
 
         self.avg_loss = (self.avg_loss * self.step + loss.data.cpu().numpy()) / (self.step + 1)
 

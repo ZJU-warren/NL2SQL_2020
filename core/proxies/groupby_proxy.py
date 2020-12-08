@@ -23,7 +23,7 @@ class GroupByProxy:
                                      test_data_holder=self.test_data_holder)
 
     def run_a_epoch(self):
-        self.order_proxy.run_a_epoch()
+        # self.order_proxy.run_a_epoch()
         self.col_proxy.run_a_epoch()
 
     def predict(self):

@@ -89,15 +89,16 @@ class ModuleProxy:
                                                   self.X_id[start: end], extra[start: end]).data.cpu().numpy()
 
             if self.header_mask is not None:
-                y_pd_score.extend(self.header_mask * score)
+                y_pd_score.extend(score * self.header_mask[start: end].data.cpu().numpy())
+                print(self.__class__.__name__)
             else:
                 y_pd_score.extend(score)
 
             if start % 100 == 0:
                 print("predict: [%d, %d]" % (start, end))
 
-            # if end == self.total:#!!!!!
-            if end == 20 or end == self.total:
+            if end == self.total:#!!!!!
+            # if end == 20 or end == self.total:
                 break
 
             i += 1

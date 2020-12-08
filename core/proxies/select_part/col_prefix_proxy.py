@@ -23,8 +23,8 @@ class SelectColPrefixNetProxy(ModuleProxy):
         self.sel_col_for_loss = torch.zeros((self.y_gt.shape[0], max_columns_number)).cuda(cuda_id)
         for i in range(self.y_gt.shape[0]):
             self.sel_col_for_loss[i, self.y_gt[i]] = 1
-        self.header_mask = torch.zeros((self.y_gt.shape[0], max_columns_number)).cuda(cuda_id)
 
+        self.header_mask = torch.zeros((self.y_gt.shape[0], max_columns_number)).cuda(cuda_id)
         for i in range(self.y_gt.shape[0]):
             col_num = self.train_data_holder.col_num(self.X_id[i])
             self.header_mask[i, :col_num] = 1
@@ -51,8 +51,15 @@ class SelectColPrefixNetProxy(ModuleProxy):
             self.prefix_N = np.array(prefix, dtype=np.int32)
             self.X_id = np.array(X_id, dtype=np.int32)
             print('after', self.prefix_N)
+
         # init data
         self.total = self.X_id.shape[0]
+
+        # init data
+        self.header_mask = torch.zeros((self.X_id.shape[0], max_columns_number)).cuda(cuda_id)
+        for i in range(self.X_id.shape[0]):
+            col_num = self.test_data_holder.col_num(self.X_id[i])
+            self.header_mask[i, :col_num] = 1
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None,
                  valid_data_holder=None, test_data_holder=None):

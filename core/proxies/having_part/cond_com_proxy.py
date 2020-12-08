@@ -50,6 +50,7 @@ class HavingCondComNetProxy(ModuleProxy):
             self.prefix = np.array(prefix, dtype=np.int32)
             self.X_id = np.array(X_id, dtype=np.int32)
 
+
         # init data
         self.total = self.X_id.shape[0]
 

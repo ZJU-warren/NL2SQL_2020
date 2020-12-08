@@ -70,6 +70,11 @@ class FromCondSuffixNetProxy(ModuleProxy):
             self.prefix = np.array(prefix, dtype=np.int32)
             self.X_id = np.array(X_id, dtype=np.int32)
 
+        self.header_mask = torch.zeros((self.X_id.shape[0], max_columns_number)).cuda(cuda_id)
+        for i in range(self.X_id.shape[0]):
+            col_num = self.test_data_holder.col_num(self.X_id[i])
+            self.header_mask[i, :col_num] = 1
+
         # init data
         self.total = self.X_id.shape[0]
 

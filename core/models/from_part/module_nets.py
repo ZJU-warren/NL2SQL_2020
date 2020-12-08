@@ -48,7 +48,9 @@ class CondSuffixNet(nn.Module):
         super(CondSuffixNet, self).__init__()
         self.base_net = base_net
         self.hidden = hidden
-        self.out = nn.Linear(hidden, self.MAX_NUM_OF_COL)
+        self.u = nn.Linear(hidden, hidden)
+        self.v = nn.Linear(hidden, hidden)
+        self.out = nn.Sequential(nn.Dropout(0.3), nn.Linear(hidden, 1))
         # self.out = nn.Sequential(nn.Dropout(0.3), nn.Linear(hidden, self.MAX_NUM_OF_COL), nn.Sigmoid())
         if gpu:
             self.cuda(cuda_id)
@@ -58,7 +60,8 @@ class CondSuffixNet(nn.Module):
         score = torch.empty((len(sel_cols), 768)).cuda(cuda_id)
         for i in range(len(sel_cols)):
             score[i] = out[i, sel_cols[i], :].squeeze()
-        score = self.out(score)
+
+        score = self.out(self.u(score.unsqueeze(1))+self.v(out)).squeeze()
         return score
 
 

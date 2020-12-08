@@ -2,13 +2,13 @@ import json
 import os
 from tools.utils import *
 
-
+print(os.getcwd())
 class JsonGenerator:
     def __init__(self, file_path, data_path, schema_path):
         self.file_path = file_path
         self.data_path = data_path
         self.schema_path = schema_path
-        self.self.qid = "question_id"
+        self.qid = "question_id"
         self.idToDB = initDic(datapath)
         self.dbToColumn = getContent(schema_path)
 
@@ -91,7 +91,7 @@ class JsonGenerator:
                 res[k] = sql[k]['col']
         return res
 
-    def gen_from(self, select_info, where_info=None, having_info=None):
+    def gen_from(self, select_info, where_info=None):
         with open(self.file_path + 'From/J', 'r') as f:
             J = json.load(f)
         with open(self.file_path + 'From/N', 'r') as f:
@@ -128,11 +128,9 @@ class JsonGenerator:
             columns.extend([it[3] for it in select_info[k]])
             columns.extend([it[0] for it in where_info[k]])
             columns.extend([it[5] for it in where_info[k]])
-            columns.extend([it[0] for it in having_info[k]])
-            columns.extend([it[5] for it in having_info[k]])
 
             for i in columns:
-                if i == -1 or i == 0 or i==-999:
+                if i == -1 or i == 0 or i == -999:
                     continue
                 try:
                     table_ids.add(self.dbToColumn[db][i])
@@ -148,18 +146,21 @@ class JsonGenerator:
             where = json.load(f)
         with open(self.file_path + 'Having/having_clause.json', 'r') as f:
             having = json.load(f)
-        with open(self.file_path + 'Limit/limit_clause.json', 'r') as f:
-            limit = json.load(f)
+        try:
+            with open(self.file_path + 'Limit/limit_clause.json', 'r') as f:
+                limit = json.load(f)
+        except:
+            limit = None
         return where, having, limit
 
     def merge_sql(self):
         select_json, order_json, group_json = self.gen_select(), self.gen_orderBy(), self.gen_groupBy()
         where_json, having_json, limit_json = self.gen_others()
-        from_json = self.gen_from(select_json, where_json, having_json)
+        from_json = self.gen_from(select_json, where_json)
         sql = {}
         for k in select_json.keys():
             sql = {'select': select_json[k], 'from': from_json[k], 'where':where_json[k], 'groupBy': group_json[k],
-                   'orderBy': order_json[k], 'having': having_json[k], 'limit': limit_json[k],
+                   'orderBy': order_json[k], 'having': having_json[k],
                    'except': {}, 'union': {}, 'intersect': {}}
             sql[k] = sql
 
@@ -184,7 +185,7 @@ class OutPutModule:
             res[comb['question_id'][i]] = comb['comb'][i]
         return res
 
-    def start(self, mode=True):
+    def start(self, path,mode=True):
         comb_json = self.load_combination()
         sql = self.sql.merge_sql()
         res = []
@@ -205,9 +206,15 @@ class OutPutModule:
         else:
             for k in comb_json.keys():
                 res.append({'question_id': k, 'db_name': self.idToDB[k], 'sql': sql})
-        with open('res.json', 'w') as f:
+        with open(path+'/res.json', 'w') as f:
             json.dump(res, f)
         print("save answer success!")
 
+
+result_path = "../../Result/"
+datapath = result_path+'data.json'
+schema_path = result_path+'db_schema.json'
+out = OutPutModule(result_path, datapath, schema_path)
+out.start(path='../../Result/')
 
 

@@ -43,7 +43,7 @@ class DataPreprocessor:
         generate_new_folder(DLSet.main_folder_link % data_source)
 
         # generate X after tokenizer
-        DataPreprocessor.__generate_X(data, content, schema, DLSet.X_link % data_source)
+        # DataPreprocessor.__generate_X(data, content, schema, DLSet.X_link % data_source)
 
         # in cheat mode, the ground truth should be format as y
         if cheat_mode is False:
@@ -257,9 +257,12 @@ class DataPreprocessor:
     @staticmethod
     def __filter(raw_data: list):
         result = []
+        cnt = 0
         for each in raw_data:
+            cnt += 1
             # if the selects columns index is 0
             flag = True
+            # print(cnt, each)
             for _ in each['sql']['select']:
                 if _[0] == 0:
                     flag = False

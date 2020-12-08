@@ -7,7 +7,7 @@ import json
 import numpy as np
 
 
-class CondPrefixNetProxy(ModuleProxy):
+class HavingCondPrefixNetProxy(ModuleProxy):
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
         super()._init_train(base_net, target_net, part_name, file_name)
 
@@ -43,7 +43,7 @@ class CondPrefixNetProxy(ModuleProxy):
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None,
                  valid_data_holder=None, test_data_holder=None):
-        super(CondPrefixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
+        super(HavingCondPrefixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
         self._init_env(base_net, CondPrefixNet, 'Having', 'prefix')
 
     def backward(self, y_pd, data_index, loss, top=None):

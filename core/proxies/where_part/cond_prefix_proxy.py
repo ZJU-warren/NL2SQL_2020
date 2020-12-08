@@ -7,7 +7,7 @@ import json
 import numpy as np
 
 
-class CondPrefixNetProxy(ModuleProxy):
+class WhereCondPrefixNetProxy(ModuleProxy):
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
         super()._init_train(base_net, target_net, part_name, file_name)
 
@@ -26,8 +26,8 @@ class CondPrefixNetProxy(ModuleProxy):
         self.header_mask = torch.zeros((self.y_gt.shape[0], max_columns_number)).cuda(cuda_id)
 
         for i in range(self.y_gt.shape[0]):
-                col_num = self.train_data_holder.col_num(i)
-                self.header_mask[i, :col_num] = 1
+            col_num = self.train_data_holder.col_num(i)
+            self.header_mask[i, :col_num] = 1
 
     def _init_test(self, base_net, target_net, part_name, file_name, tensor=False):
         super()._init_test(base_net, target_net, part_name, file_name)
@@ -43,7 +43,7 @@ class CondPrefixNetProxy(ModuleProxy):
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None,
                  valid_data_holder=None, test_data_holder=None):
-        super(CondPrefixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
+        super(WhereCondPrefixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
         self._init_env(base_net, CondPrefixNet, 'Where', 'prefix')
 
     def backward(self, y_pd, data_index, loss, top=None):
@@ -55,4 +55,4 @@ class CondPrefixNetProxy(ModuleProxy):
         return super().backward(y_pd, data_index, loss, top=(self.prefix_N, self.valid_prefix_N))
 
     def predict(self, top=1, keyword=None, target_path=None):
-        result = super().predict(self.prefix_N, 'prefix', '/Where/prefix')
+        result = super().predict(self.prefix_N + 1, 'prefix', '/Where/prefix')

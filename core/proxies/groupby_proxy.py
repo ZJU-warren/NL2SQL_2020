@@ -1,5 +1,5 @@
-from core.proxies.groupby_part.need_proxy import NeedNetProxy
-from core.proxies.groupby_part.col_proxy import ColNetProxy
+from core.proxies.groupby_part.need_proxy import GroupByNeedNetProxy
+from core.proxies.groupby_part.col_proxy import GroupByColNetProxy
 
 
 class GroupByProxy:
@@ -11,31 +11,31 @@ class GroupByProxy:
         self.test_data_holder = test_data_holder
 
         if self.mode is False:
-            self.order_proxy = NeedNetProxy(self.base_net, predict_mode=self.mode,
-                                                    train_data_holder=self.train_data_holder,
-                                                    valid_data_holder=self.valid_data_holder,
-                                                    test_data_holder=self.test_data_holder)
+            self.order_proxy = GroupByNeedNetProxy(self.base_net, predict_mode=self.mode,
+                                                   train_data_holder=self.train_data_holder,
+                                                   valid_data_holder=self.valid_data_holder,
+                                                   test_data_holder=self.test_data_holder)
 
             self.col_proxy \
-                = ColNetProxy(self.base_net, predict_mode=self.mode,
-                                                    train_data_holder=self.train_data_holder,
-                                                    valid_data_holder=self.valid_data_holder,
-                                                    test_data_holder=self.test_data_holder)
+                = GroupByColNetProxy(self.base_net, predict_mode=self.mode,
+                                     train_data_holder=self.train_data_holder,
+                                     valid_data_holder=self.valid_data_holder,
+                                     test_data_holder=self.test_data_holder)
 
     def run_a_epoch(self):
         self.order_proxy.run_a_epoch()
         self.col_proxy.run_a_epoch()
 
     def predict(self):
-        self.order_proxy = NeedNetProxy(self.base_net, predict_mode=self.mode,
-                                                train_data_holder=self.train_data_holder,
-                                                valid_data_holder=self.valid_data_holder,
-                                                test_data_holder=self.test_data_holder)
+        self.order_proxy = GroupByNeedNetProxy(self.base_net, predict_mode=self.mode,
+                                               train_data_holder=self.train_data_holder,
+                                               valid_data_holder=self.valid_data_holder,
+                                               test_data_holder=self.test_data_holder)
         self.order_proxy.predict()
 
         self.col_proxy \
-            = ColNetProxy(self.base_net, predict_mode=self.mode,
-                                                train_data_holder=self.train_data_holder,
-                                                valid_data_holder=self.valid_data_holder,
-                                                test_data_holder=self.test_data_holder)
+            = GroupByColNetProxy(self.base_net, predict_mode=self.mode,
+                                 train_data_holder=self.train_data_holder,
+                                 valid_data_holder=self.valid_data_holder,
+                                 test_data_holder=self.test_data_holder)
         self.col_proxy.predict()

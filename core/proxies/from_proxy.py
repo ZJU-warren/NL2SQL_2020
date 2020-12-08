@@ -1,7 +1,7 @@
-from core.proxies.from_part.n_cond_proxy import NCondNetProxy
-from core.proxies.from_part.j_cond_proxy import JCondNetProxy
-from core.proxies.from_part.cond_prefix_proxy import CondPrefixNetProxy
-from core.proxies.from_part.cond_suffix_proxy import CondSuffixNetProxy
+from core.proxies.from_part.n_cond_proxy import FromNCondNetProxy
+from core.proxies.from_part.j_cond_proxy import FromJCondNetProxy
+from core.proxies.from_part.cond_prefix_proxy import FromCondPrefixNetProxy
+from core.proxies.from_part.cond_suffix_proxy import FromCondSuffixNetProxy
 
 
 class FromProxy:
@@ -14,57 +14,57 @@ class FromProxy:
         self.test_data_holder = test_data_holder
 
         if self.mode is False:
-            self.n_cond_proxy = NCondNetProxy(self.base_net, predict_mode=self.mode,
-                                            train_data_holder=self.train_data_holder,
-                                            valid_data_holder=self.valid_data_holder,
-                                            test_data_holder=self.test_data_holder)
+            self.n_cond_proxy = FromNCondNetProxy(self.base_net, predict_mode=self.mode,
+                                                  train_data_holder=self.train_data_holder,
+                                                  valid_data_holder=self.valid_data_holder,
+                                                  test_data_holder=self.test_data_holder)
 
             self.cond_prefix_proxy \
-                = CondPrefixNetProxy(self.base_net, predict_mode=self.mode,
-                                    train_data_holder=self.train_data_holder,
-                                    valid_data_holder=self.valid_data_holder,
-                                    test_data_holder=self.test_data_holder)
+                = FromCondPrefixNetProxy(self.base_net, predict_mode=self.mode,
+                                         train_data_holder=self.train_data_holder,
+                                         valid_data_holder=self.valid_data_holder,
+                                         test_data_holder=self.test_data_holder)
 
             self.cond_suffix_proxy \
-                = CondSuffixNetProxy(self.base_net, predict_mode=self.mode,
-                                 train_data_holder=self.train_data_holder,
-                                 valid_data_holder=self.valid_data_holder,
-                                 test_data_holder=self.test_data_holder)
+                = FromCondSuffixNetProxy(self.base_net, predict_mode=self.mode,
+                                         train_data_holder=self.train_data_holder,
+                                         valid_data_holder=self.valid_data_holder,
+                                         test_data_holder=self.test_data_holder)
 
-            self.j_cond_proxy = JCondNetProxy(self.base_net, predict_mode=self.mode,
-                                 train_data_holder=self.train_data_holder,
-                                 valid_data_holder=self.valid_data_holder,
-                                 test_data_holder=self.test_data_holder)
+            self.j_cond_proxy = FromJCondNetProxy(self.base_net, predict_mode=self.mode,
+                                                  train_data_holder=self.train_data_holder,
+                                                  valid_data_holder=self.valid_data_holder,
+                                                  test_data_holder=self.test_data_holder)
 
     def run_a_epoch(self):
         self.n_cond_proxy.run_a_epoch()
-        self.cond_prefix_proxy.run_a_epoch()
-        self.cond_suffix_proxy.run_a_epoch()
-        self.j_cond_proxy.run_a_epoch()
+        # self.cond_prefix_proxy.run_a_epoch()
+        # self.cond_suffix_proxy.run_a_epoch()
+        # self.j_cond_proxy.run_a_epoch()
 
     def predict(self):
-        self.n_cond_proxy = NCondNetProxy(self.base_net, predict_mode=self.mode,
-                                        train_data_holder=self.train_data_holder,
-                                        valid_data_holder=self.valid_data_holder,
-                                        test_data_holder=self.test_data_holder)
+        self.n_cond_proxy = FromNCondNetProxy(self.base_net, predict_mode=self.mode,
+                                              train_data_holder=self.train_data_holder,
+                                              valid_data_holder=self.valid_data_holder,
+                                              test_data_holder=self.test_data_holder)
         self.n_cond_proxy.predict()
 
-        self.cond_prefix_proxy \
-            = CondPrefixNetProxy(self.base_net, predict_mode=self.mode,
-                                train_data_holder=self.train_data_holder,
-                                valid_data_holder=self.valid_data_holder,
-                                test_data_holder=self.test_data_holder)
-        self.cond_prefix_proxy.predict()
-
-        self.cond_suffix_proxy \
-            = CondSuffixNetProxy(self.base_net, predict_mode=self.mode,
-                             train_data_holder=self.train_data_holder,
-                             valid_data_holder=self.valid_data_holder,
-                             test_data_holder=self.test_data_holder)
-        self.cond_suffix_proxy.predict()
-
-        self.j_cond_proxy = JCondNetProxy(self.base_net, predict_mode=self.mode,
-                             train_data_holder=self.train_data_holder,
-                             valid_data_holder=self.valid_data_holder,
-                             test_data_holder=self.test_data_holder)
-        self.j_cond_proxy.predict()
+        # self.cond_prefix_proxy \
+        #     = CondPrefixNetProxy(self.base_net, predict_mode=self.mode,
+        #                         train_data_holder=self.train_data_holder,
+        #                         valid_data_holder=self.valid_data_holder,
+        #                         test_data_holder=self.test_data_holder)
+        # self.cond_prefix_proxy.predict()
+        #
+        # self.cond_suffix_proxy \
+        #     = CondSuffixNetProxy(self.base_net, predict_mode=self.mode,
+        #                      train_data_holder=self.train_data_holder,
+        #                      valid_data_holder=self.valid_data_holder,
+        #                      test_data_holder=self.test_data_holder)
+        # self.cond_suffix_proxy.predict()
+        #
+        # self.j_cond_proxy = JCondNetProxy(self.base_net, predict_mode=self.mode,
+        #                      train_data_holder=self.train_data_holder,
+        #                      valid_data_holder=self.valid_data_holder,
+        #                      test_data_holder=self.test_data_holder)
+        # self.j_cond_proxy.predict()

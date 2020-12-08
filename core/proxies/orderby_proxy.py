@@ -1,5 +1,5 @@
-from core.proxies.orderby_part.order_proxy import OrderNetProxy
-from core.proxies.orderby_part.col_proxy import ColNetProxy
+from core.proxies.orderby_part.order_proxy import OrderByOrderNetProxy
+from core.proxies.orderby_part.col_proxy import OrderByColNetProxy
 
 
 class OrderByProxy:
@@ -10,31 +10,31 @@ class OrderByProxy:
         self.valid_data_holder = valid_data_holder
         self.test_data_holder = test_data_holder
         if self.mode is False:
-            self.order_proxy = OrderNetProxy(self.base_net, predict_mode=self.mode,
-                                                train_data_holder=self.train_data_holder,
-                                                valid_data_holder=self.valid_data_holder,
-                                                test_data_holder=self.test_data_holder)
+            self.order_proxy = OrderByOrderNetProxy(self.base_net, predict_mode=self.mode,
+                                                    train_data_holder=self.train_data_holder,
+                                                    valid_data_holder=self.valid_data_holder,
+                                                    test_data_holder=self.test_data_holder)
 
             self.col_proxy \
-                = ColNetProxy(self.base_net, predict_mode=self.mode,
-                                                train_data_holder=self.train_data_holder,
-                                                valid_data_holder=self.valid_data_holder,
-                                                test_data_holder=self.test_data_holder)
+                = OrderByColNetProxy(self.base_net, predict_mode=self.mode,
+                                     train_data_holder=self.train_data_holder,
+                                     valid_data_holder=self.valid_data_holder,
+                                     test_data_holder=self.test_data_holder)
 
     def run_a_epoch(self):
         self.order_proxy.run_a_epoch()
         self.col_proxy.run_a_epoch()
 
     def predict(self):
-        self.order_proxy = OrderNetProxy(self.base_net, predict_mode=self.mode,
-                                            train_data_holder=self.train_data_holder,
-                                            valid_data_holder=self.valid_data_holder,
-                                            test_data_holder=self.test_data_holder)
+        self.order_proxy = OrderByOrderNetProxy(self.base_net, predict_mode=self.mode,
+                                                train_data_holder=self.train_data_holder,
+                                                valid_data_holder=self.valid_data_holder,
+                                                test_data_holder=self.test_data_holder)
         self.order_proxy.predict()
 
         self.col_proxy \
-            = ColNetProxy(self.base_net, predict_mode=self.mode,
-                                            train_data_holder=self.train_data_holder,
-                                            valid_data_holder=self.valid_data_holder,
-                                            test_data_holder=self.test_data_holder)
-        self.order_proxy.predict()
+            = OrderByColNetProxy(self.base_net, predict_mode=self.mode,
+                                 train_data_holder=self.train_data_holder,
+                                 valid_data_holder=self.valid_data_holder,
+                                 test_data_holder=self.test_data_holder)
+        self.col_proxy.predict()

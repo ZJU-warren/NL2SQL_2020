@@ -4,13 +4,13 @@ from torch.nn import CrossEntropyLoss
 from GlobalParameters import cuda_id
 
 
-class ColComNetProxy(ModuleProxy):
+class SelectColComNetProxy(ModuleProxy):
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
         super()._init_train(base_net, target_net, part_name, file_name, tensor=True)
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None,
                  valid_data_holder=None, test_data_holder=None):
-        super(ColComNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
+        super(SelectColComNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
         self._init_train(base_net, CondComNet, 'Select', 'com', True)
 
     def predict(self, top=1, keyword=None, target_path=None):

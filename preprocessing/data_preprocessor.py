@@ -121,7 +121,11 @@ class DataPreprocessor:
         question_id = []
         db_name = []
         for each in data:
-            query_with_db_info.append(each['question'] + db_info[each['db_name']])
+            temp = each['question'] + db_info[each['db_name']]
+            if len(temp) > 450:#!!!!
+                temp = '[unused1]'.join(temp[:450].split('[unused1]')[: -1])
+
+            query_with_db_info.append(temp)
             question_id.append(each['question_id'])
             db_name.append(each['db_name'])
 
@@ -188,6 +192,17 @@ class DataPreprocessor:
                         columns_start = i + 1
 
             # calculate the max-length table-column
+
+            # print('tables_index', tables_index)
+            # print('columns_index', columns_index)
+            # print('x', x)
+            # print(len(tables_index),
+            #       len(columns_index),
+            #       len(query_with_db_info[cnt].split('[unused1]')),
+            #       len(query_with_db_info[cnt].split('[SEP]'))
+            #       )
+            #
+            # print(cnt, 'len x', len(x), query_with_db_info[cnt])
             for i in range(len(tables_index)):
                 for each in columns_index[i]:
                     if max_len < tables_index[i][1] - tables_index[i][0] + each[1] - each[0]:

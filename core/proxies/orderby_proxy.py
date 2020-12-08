@@ -37,4 +37,4 @@ class OrderByProxy:
                                             train_data_holder=self.train_data_holder,
                                             valid_data_holder=self.valid_data_holder,
                                             test_data_holder=self.test_data_holder)
-        self.order_proxy.predict()
+        self.col_proxy.predict()

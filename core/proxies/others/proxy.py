@@ -56,7 +56,7 @@ class ModuleProxy:
         self.batch_size = max(self.total // self.batch, 5)
         self.optimizer = optim.Adam(self.target_net.parameters(), lr=learning_rate)
 
-    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None, batch=2000):
+    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None, batch=1000):
         self.mode = predict_mode
         self.batch = batch
         self.train_data_holder = train_data_holder
@@ -88,8 +88,8 @@ class ModuleProxy:
             if start % 100 == 0:
                 print("predict: [%d, ~]" % start)
 
-            # if end == self.total:#!!!!!
-            if end == 20:
+            if end == self.total:#!!!!!
+            # if end == 20:
                 break
             i += 1
             torch.cuda.empty_cache()
@@ -102,8 +102,8 @@ class ModuleProxy:
             keyword: [],
         }
 
-        # for _ in range(self.total):#!!!!!
-        for _ in range(20):
+        for _ in range(self.total):#!!!!!
+        # for _ in range(20):
             question_id = self.test_data_holder.get_question_id(self.X_id[_])
             prediction['X_id'].append(int(self.X_id[_].item()))
             prediction['question_id'].append(question_id)
@@ -150,18 +150,18 @@ class ModuleProxy:
             if self.start == 0:
                 break
 
-            break #!!!!!
+            # break #!!!!!
 
-        # if self.last_acc > 0.8 and self.best_acc < self.last_acc: #!!!!!
-        if True:
+        if self.last_acc > 0.8 and self.best_acc < self.last_acc: #!!!!!
+        # if True:
             print('=============== save the best model [%s] with acc %f ================='
                   % (self.__class__.__name__, self.last_acc))
             self.save_model()
             self.best_acc = self.last_acc
             # self.load_model()
 
-            # if self.last_acc > 0.95: #!!!!!
-            self.need_train = False
+            if self.last_acc > 0.95: #!!!!!
+                self.need_train = False
 
         print('- [%s] with loss %f and acc %f in the last epoch.'
               % (self.__class__.__name__, self.avg_loss, self.last_acc))
@@ -196,7 +196,7 @@ class ModuleProxy:
             # @validation
             total_valid = len(self.valid_y_gt)
             # data_index = random.sample([i for i in range(total_valid)], 15) # !!!!
-            data_index = random.sample([i for i in range(total_valid)], 2)
+            data_index = random.sample([i for i in range(total_valid)], 10)
             # data_index = [i for i in range(total_valid)]
             gt = self.valid_y_gt[data_index]
 

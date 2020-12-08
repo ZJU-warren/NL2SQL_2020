@@ -7,6 +7,7 @@ from tools.metrics import acc
 from tools.prediction_gen import predict_generate
 import random
 import torch
+import time
 
 
 class ModuleProxy:
@@ -48,8 +49,6 @@ class ModuleProxy:
                 self.valid_y_gt = torch.Tensor(json.load(f)[file_name]).long()
             else:
                 self.valid_y_gt = np.array(json.load(f)[file_name], dtype=object)
-        print(len(self.valid_X_id), len(self.valid_y_gt))
-
 
         # epoch init
         self.total = self.y_gt.shape[0]
@@ -57,7 +56,8 @@ class ModuleProxy:
         self.batch_size = max(self.total // self.batch, 5)
         self.optimizer = optim.Adam(self.target_net.parameters(), lr=learning_rate)
 
-    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None, batch=1500):
+    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None, batch=1500, thres=0.99):
+        self.thres = thres
         self.mode = predict_mode
         self.batch = batch
         self.train_data_holder = train_data_holder
@@ -157,7 +157,11 @@ class ModuleProxy:
 
             if self.start == 0:
                 break
-
+            #
+            # if step == 5: # !!!!!
+            #     break
+            
+        print("____________thre %f", self.thres)
         if self.last_acc > 0.8 and self.best_acc < self.last_acc:
             print('=============== save the best model [%s] with acc %f ================='
                   % (self.__class__.__name__, self.last_acc))
@@ -165,7 +169,7 @@ class ModuleProxy:
             self.best_acc = self.last_acc
             # self.load_model()
 
-            if self.last_acc > 0.95:
+            if self.last_acc > self.thres:
                 self.need_train = False
 
         print('- [%s] with loss %f and acc %f in the last epoch.'

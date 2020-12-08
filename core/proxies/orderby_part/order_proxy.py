@@ -17,5 +17,5 @@ class OrderByOrderNetProxy(ModuleProxy):
         loss = CrossEntropyLoss()(y_pd, gt.cuda(cuda_id))
         return super().backward(y_pd, data_index, loss)
 
-    def predict(self, top=1, keyword=None, target_path=None):
+    def predict(self, top=1, keyword=None, target_path=None, extra=None):
         result = super().predict(top, 'order', '/OrderBy/order')

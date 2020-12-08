@@ -9,7 +9,7 @@ import numpy as np
 
 class SelectColPrefixNetProxy(ModuleProxy):
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
-        super()._init_train(base_net, target_net, part_name, file_name)
+        super()._init_train(base_net, target_net, part_name, file_name, tensor)
 
         with open(DLSet.main_folder_link % 'Train' + '/Select/X_gt_sup_prefix', 'r') as f:
             info = json.load(f)
@@ -30,7 +30,7 @@ class SelectColPrefixNetProxy(ModuleProxy):
             self.header_mask[i, :col_num] = 1
 
     def _init_test(self, base_net, target_net, part_name, file_name, tensor=False):
-        super()._init_test(base_net, target_net, part_name, file_name)
+        super()._init_test(base_net, target_net, part_name, file_name, tensor)
 
         # init data
         with open(DLSet.result_folder_link + '/Select/K', 'r') as f:

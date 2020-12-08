@@ -69,7 +69,6 @@ class ModuleProxy:
         self.loss = 0
         self.step = 0
         self.start = 0
-
         self.need_train = True
 
     def predict(self, top=1, keyword=None, target_path=None):
@@ -131,6 +130,7 @@ class ModuleProxy:
             data_index = list(range(self.start, end))
 
             # forward
+
             acc_value_valid = self.forward(data_index)
 
             # step

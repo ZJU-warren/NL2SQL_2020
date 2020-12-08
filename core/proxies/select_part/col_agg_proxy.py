@@ -13,7 +13,7 @@ class SelectColAggNetProxy(ModuleProxy):
         self._init_env(base_net, SelAggNet, 'Select', 'agg', True)
 
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
-        super()._init_train(base_net, target_net, part_name, file_name)
+        super()._init_train(base_net, target_net, part_name, file_name, tensor)
 
         with open(DLSet.main_folder_link % 'Train' + '/Select/X_gt_sup_agg', 'r') as f:
             info = json.load(f)
@@ -24,7 +24,7 @@ class SelectColAggNetProxy(ModuleProxy):
             self.valid_prefix = np.array(info['prefix'], dtype=np.int32)
 
     def _init_test(self, base_net, target_net, part_name, file_name, tensor=False):
-        super()._init_test(base_net, target_net, part_name, file_name)
+        super()._init_test(base_net, target_net, part_name, file_name, tensor)
 
         # init data
         with open(DLSet.result_folder_link + '/Select/Prefix', 'r') as f:
@@ -48,13 +48,15 @@ class SelectColAggNetProxy(ModuleProxy):
         self.total = self.X_id.shape[0]
 
     def forward(self, data_index):
+        print("---------------- forward with mode : -------------", self.mode)
         if self.mode == 'Valid':
-            y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index], extra=self.valid_prefix[data_index])
+            y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index], self.valid_prefix[data_index])
         else:
-            y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index], extra=self.prefix[data_index])
+            y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index], self.prefix[data_index])
         return self.backward(y_pd_score, data_index, None)
 
     def backward(self, y_pd, data_index, loss, top=1):
+        print(type(data_index))
         gt = self.y_gt[data_index]
         loss = CrossEntropyLoss()(y_pd, gt.cuda(cuda_id))
         return super().backward(y_pd, data_index, loss)

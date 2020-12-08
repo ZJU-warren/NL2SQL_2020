@@ -26,9 +26,7 @@ class SelColNet(nn.Module):
         super(SelColNet, self).__init__()
         self.base_net = base_net
         self.C = max_columns_number
-
         self.out = nn.Sequential(nn.LayerNorm(hidden), nn.Dropout(0.2), nn.Linear(hidden, 1), nn.Sigmoid())
-
         if gpu:
             self.cuda(cuda_id)
 

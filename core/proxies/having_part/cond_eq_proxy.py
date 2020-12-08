@@ -68,7 +68,7 @@ class HavingCondEqNetProxy(ModuleProxy):
 
         acc_value_valid = -1
 
-        if self.step % 1 == 0:
+        if self.step % 10 == 0:
             print('-- loss_cpu', self.loss.data.cpu().numpy())
             self.optimizer.step()
             self.optimizer.zero_grad()

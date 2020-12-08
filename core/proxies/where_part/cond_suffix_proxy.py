@@ -7,6 +7,7 @@ from tools.metrics import acc
 import random
 import json
 import numpy as np
+from torch.nn import CrossEntropyLoss
 
 
 class WhereCondSuffixNetProxy(ModuleProxy):
@@ -14,7 +15,7 @@ class WhereCondSuffixNetProxy(ModuleProxy):
                  valid_data_holder=None, test_data_holder=None):
         super(WhereCondSuffixNetProxy, self).__init__(predict_mode, train_data_holder,
                                                       valid_data_holder, test_data_holder)
-        self._init_env(base_net, CondSuffixNet, 'Where', 'suffix')
+        self._init_env(base_net, CondSuffixNet, 'Where', 'suffix', True)
 
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
         super()._init_train(base_net, target_net, part_name, file_name, tensor)
@@ -73,12 +74,8 @@ class WhereCondSuffixNetProxy(ModuleProxy):
         return self.backward(y_pd_score, data_index, None)
 
     def backward(self, y_pd, data_index, loss, top=1):
-        sel_col_label = self.sel_col_for_loss[data_index]
-
-        col_raw_loss = 3 * sel_col_label * torch.log(y_pd + 1e-10) \
-                       + (1 - sel_col_label) * torch.log(1 - y_pd + 1e-10)
-        col_mask_loss = col_raw_loss * self.header_mask[data_index]
-        loss = -torch.sum(col_mask_loss) / torch.sum(self.header_mask[data_index])
+        gt = self.y_gt[data_index]
+        loss = CrossEntropyLoss()(y_pd, gt.cuda(cuda_id))
 
         self.avg_loss = (self.avg_loss * self.step + loss.data.cpu().numpy()) / (self.step + 1)
 
@@ -88,7 +85,7 @@ class WhereCondSuffixNetProxy(ModuleProxy):
 
         acc_value_valid = -1
 
-        if self.step % 1 == 0:
+        if self.step % 10 == 0:
             print('-- loss_cpu', self.loss.data.cpu().numpy())
             self.optimizer.step()
             self.optimizer.zero_grad()

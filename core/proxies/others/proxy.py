@@ -165,7 +165,7 @@ class ModuleProxy:
             self.best_acc = self.last_acc
             # self.load_model()
 
-            if self.last_acc > 0.95:
+            if self.last_acc > 0.99:
                 self.need_train = False
 
         print('- [%s] with loss %f and acc %f in the last epoch.'

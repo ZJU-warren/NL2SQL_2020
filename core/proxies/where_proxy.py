@@ -51,12 +51,11 @@ class WhereProxy:
                                           test_data_holder=self.test_data_holder)
 
     def run_a_epoch(self):
-        self.n_cond_proxy.run_a_epoch()
-        self.cond_prefix_proxy.run_a_epoch()
-        self.cond_operation_proxy.run_a_epoch()
-
-        self.cond_com_proxy.run_a_epoch()
-        self.cond_eq_proxy.run_a_epoch()
+        # self.n_cond_proxy.run_a_epoch()
+        # self.cond_prefix_proxy.run_a_epoch()
+        # self.cond_operation_proxy.run_a_epoch()
+        # self.cond_com_proxy.run_a_epoch()
+        # self.cond_eq_proxy.run_a_epoch()
         self.cond_suffix_proxy.run_a_epoch()
 
     def predict(self):

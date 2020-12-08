@@ -20,7 +20,7 @@ class GroupByProxy:
                 = GroupByColNetProxy(self.base_net, predict_mode=self.mode,
                                      train_data_holder=self.train_data_holder,
                                      valid_data_holder=self.valid_data_holder,
-                                     test_data_holder=self.test_data_holder)
+                                     test_data_holder=self.test_data_holder, thres=0.9)
 
     def run_a_epoch(self):
         self.order_proxy.run_a_epoch()
@@ -37,5 +37,5 @@ class GroupByProxy:
             = GroupByColNetProxy(self.base_net, predict_mode=self.mode,
                                  train_data_holder=self.train_data_holder,
                                  valid_data_holder=self.valid_data_holder,
-                                 test_data_holder=self.test_data_holder)
+                                 test_data_holder=self.test_data_holder, thres=0.9)
         self.col_proxy.predict()

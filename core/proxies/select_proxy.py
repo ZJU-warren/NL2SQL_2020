@@ -3,6 +3,8 @@ from core.proxies.select_part.col_prefix_proxy import SelectColPrefixNetProxy
 from core.proxies.select_part.col_agg_proxy import SelectColAggNetProxy
 from core.proxies.select_part.col_com_proxy import SelectColComNetProxy
 from core.proxies.select_part.col_suffix_proxy import SelectColSuffixNetProxy
+import torch
+import time
 
 
 class SelectProxy:
@@ -46,10 +48,26 @@ class SelectProxy:
 
     def run_a_epoch(self):
         # self.n_col_proxy.run_a_epoch()
+
+        # torch.cuda.empty_cache()
+        # time.sleep(2)
         # self.col_prefix_proxy.run_a_epoch()
+
+        # torch.cuda.empty_cache()
+        # time.sleep(2)
         # self.col_agg_proxy.run_a_epoch()
+
+        # torch.cuda.empty_cache()
+        # time.sleep(2)
         # self.col_com_proxy.run_a_epoch()
+
+        torch.cuda.empty_cache()
+        time.sleep(2)
         self.col_suffix_proxy.run_a_epoch()
+
+        torch.cuda.empty_cache()
+        time.sleep(2)
+
 
     def predict(self):
         self.n_col_proxy = SelectNColNetProxy(self.base_net, predict_mode=self.mode,

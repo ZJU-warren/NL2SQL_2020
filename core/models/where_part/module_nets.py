@@ -28,7 +28,9 @@ class CondComNet(nn.Module):
         super(CondComNet, self).__init__()
         self.base_net = base_net
         self.hidden = hidden
-        self.linear = nn.Sequential(nn.Dropout(0.3), nn.Linear(hidden, self.MAX_NUM_OF_COM))
+        self.u = nn.Linear(hidden, hidden)
+        self.v = nn.Linear(hidden, hidden)
+        self.linear = nn.Sequential(nn.Tanh(),nn.Dropout(0.3), nn.Linear(hidden, self.MAX_NUM_OF_COM))
 
         if gpu:
             self.cuda(cuda_id)
@@ -38,7 +40,7 @@ class CondComNet(nn.Module):
         score = torch.empty((len(sel_cols), 768)).cuda(cuda_id)
         for i in range(len(sel_cols)):
             score[i] = out[i, sel_cols[i], :].squeeze()
-        score = self.linear(score)
+        score = self.linear(self.u(cls) + self.v(score))
         return score
 
 
@@ -49,7 +51,9 @@ class CondEqNet(nn.Module):
         super(CondEqNet, self).__init__()
         self.base_net = base_net
         self.hidden = hidden
-        self.linear = nn.Sequential(nn.Dropout(0.3), nn.Linear(hidden, self.MAX_NUM_OF_EQ))
+        self.u = nn.Linear(hidden, hidden)
+        self.v = nn.Linear(hidden, hidden)
+        self.linear = nn.Sequential(nn.Tanh(), nn.Dropout(0.3), nn.Linear(hidden, self.MAX_NUM_OF_EQ))
 
         if gpu:
             self.cuda(cuda_id)
@@ -59,5 +63,5 @@ class CondEqNet(nn.Module):
         score = torch.empty((len(sel_cols), 768)).cuda(cuda_id)
         for i in range(len(sel_cols)):
             score[i] = out[i, sel_cols[i], :].squeeze()
-        score = self.linear(score)
+        score = self.linear(self.u(cls) + self.v(score))
         return score

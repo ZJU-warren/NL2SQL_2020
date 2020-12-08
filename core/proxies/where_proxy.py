@@ -98,5 +98,5 @@ class WhereProxy:
                                  train_data_holder=self.train_data_holder,
                                  valid_data_holder=self.valid_data_holder,
                                  test_data_holder=self.test_data_holder)
-        self.col_suffix_proxy.predict()
+        self.cond_suffix_proxy.predict()
 

@@ -49,7 +49,9 @@ class SelAggNet(nn.Module):
             self.cuda(cuda_id)
 
     def forward(self,data_holder, X_id, sel_cols):
-        b = len(inp)
+        cls, out, col_att = self.base_net(data_holder, X_id)
+
+        b = len(out)
         col_len = [len(col) for col in sel_cols]
         t = sum(col_len)
         if self.gpu:
@@ -59,7 +61,7 @@ class SelAggNet(nn.Module):
         st = 0
         for i in range(b):
             ed = st+col_len[i]
-            score[st:ed, :] = self.out(inp[i, sel_cols[i]])
+            score[st:ed, :] = self.out(out[i, sel_cols[i]])
             st = ed
         return score
 
@@ -76,7 +78,7 @@ class SelOpNet(nn.Module):
         if gpu:
             self.cuda(cuda_id)
 
-    def forward(self, cls, data_holder, X_id, sel_cols):
+    def forward(self, data_holder, X_id, sel_cols):
         cls, out, col_att = self.base_net(data_holder, X_id)
 
         return self.linear(cls), self.has_op(cls).squeeze()

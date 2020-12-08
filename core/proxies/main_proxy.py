@@ -64,8 +64,8 @@ class MainProxy:
             # self.combination_proxy.predict()
         else:
             for _ in range(self.epoch):
-                # self.select_proxy.run_a_epoch()
-                self.from_proxy.run_a_epoch()
+                self.select_proxy.run_a_epoch()
+                # self.from_proxy.run_a_epoch()
                 # self.where_proxy.run_a_epoch()
                 # self.having_proxy.run_a_epoch()
                 # self.groupby_proxy.run_a_epoch()

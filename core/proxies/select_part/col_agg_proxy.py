@@ -29,10 +29,11 @@ class SelectColAggNetProxy(ModuleProxy):
         super()._init_test(base_net, target_net, part_name, file_name, tensor)
 
         # init data
-        with open(DLSet.result_folder_link + '/Select/Prefix', 'r') as f:
+        with open(DLSet.result_folder_link + '/Select/prefix', 'r') as f:
             info = json.load(f)
             self.X_id = np.array(info['X_id'], dtype=np.int32)
-            self.prefix = np.array(info['prefix'], dtype=np.int32)
+            print(info['prefix'])
+            self.prefix = info['prefix']
 
             X_id = []
             prefix = []
@@ -54,7 +55,7 @@ class SelectColAggNetProxy(ModuleProxy):
         return self.backward(y_pd_score, data_index, None)
 
     def predict(self, top=1, keyword=None, target_path=None, extra=None):
-        result = super().predict(top, 'agg', '/Select/agg')
+        result = super().predict(top, 'agg', '/Select/agg', extra=self.prefix)
 
     def backward(self, y_pd, data_index, loss, top=1):
         gt = self.y_gt[data_index]

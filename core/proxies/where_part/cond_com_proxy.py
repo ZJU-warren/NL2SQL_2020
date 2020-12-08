@@ -33,7 +33,7 @@ class WhereCondComNetProxy(ModuleProxy):
         with open(DLSet.result_folder_link + '/Where/prefix', 'r') as f:
             info = json.load(f)
             self.X_id = np.array(info['X_id'], dtype=np.int32)
-            self.prefix = np.array(info['prefix'], dtype=np.int32)
+            self.prefix = info['prefix']
 
             X_id = []
             prefix = []
@@ -54,8 +54,8 @@ class WhereCondComNetProxy(ModuleProxy):
         y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index], self.prefix[data_index])
         return self.backward(y_pd_score, data_index, None)
 
-    def predict(self, top=1, keyword=None, target_path=None):
-        result = super().predict(top, 'com', '/Where/com')
+    def predict(self, top=1, keyword=None, target_path=None, extra=None):
+        result = super().predict(top, 'com', '/Where/com', extra=self.prefix)
 
     def backward(self, y_pd, data_index, loss, top=1):
         gt = self.y_gt[data_index]

@@ -35,10 +35,10 @@ class CondComNet(nn.Module):
 
     def forward(self, data_holder, X_id, sel_cols):
         cls, out, col_att = self.base_net(data_holder, X_id)
-        score = torch.empty((len(sel_cols), 768)).cuda()
+        score = torch.empty((len(sel_cols), 768)).cuda(cuda_id)
         for i in range(len(sel_cols)):
             score[i] = out[i, sel_cols[i], :].squeeze()
-        score = self.out(score)
+        score = self.linear(score)
         return score
 
 
@@ -56,8 +56,8 @@ class CondEqNet(nn.Module):
 
     def forward(self, data_holder, X_id, sel_cols):
         cls, out, col_att = self.base_net(data_holder, X_id)
-        score = torch.empty((len(sel_cols), 768)).cuda()
+        score = torch.empty((len(sel_cols), 768)).cuda(cuda_id)
         for i in range(len(sel_cols)):
             score[i] = out[i, sel_cols[i], :].squeeze()
-        score = self.out(score)
+        score = self.linear(score)
         return score

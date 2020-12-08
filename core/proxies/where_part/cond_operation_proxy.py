@@ -9,7 +9,7 @@ class WhereCondOperationNetProxy(ModuleProxy):
         super(WhereCondOperationNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
         self._init_env(base_net, CondOperationNet, 'Where', 'operation', True)
 
-    def predict(self, top=1, keyword=None, target_path=None):
+    def predict(self, top=1, keyword=None, target_path=None, extra=None):
         result = super().predict(top, 'operation', '/Where/operation')
 
     def backward(self, y_pd, data_index, loss, top=1):

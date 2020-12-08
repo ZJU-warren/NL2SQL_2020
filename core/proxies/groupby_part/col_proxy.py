@@ -1,4 +1,4 @@
-from core.models.from_part.module_nets import CondSuffixNet
+from core.models.groupby_part.module_nets import ColOneNet
 from core.proxies.others.proxy import ModuleProxy
 import torch
 from GlobalParameters import cuda_id, max_columns_number
@@ -20,7 +20,7 @@ class GroupByColNetProxy(ModuleProxy):
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None):
         super(GroupByColNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
-        self._init_env(base_net, CondSuffixNet, 'GroupBy', 'col')
+        self._init_env(base_net, ColOneNet, 'GroupBy', 'col')
 
     def backward(self, y_pd, data_index, loss, top=1):
         sel_col_label = self.sel_col_for_loss[data_index]

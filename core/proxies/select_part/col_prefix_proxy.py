@@ -40,6 +40,7 @@ class SelectColPrefixNetProxy(ModuleProxy):
 
             X_id = []
             prefix = []
+            print('before', self.prefix_N)
 
             num = len(self.X_id)
             for i in range(num):
@@ -47,6 +48,9 @@ class SelectColPrefixNetProxy(ModuleProxy):
                     X_id.append(self.X_id[i])
                     prefix.append(self.prefix_N[i])
 
+            self.prefix_N = np.array(prefix, dtype=np.int32)
+            self.X_id = np.array(X_id, dtype=np.int32)
+            print('after', self.prefix_N)
         # init data
         self.total = self.X_id.shape[0]
 

@@ -11,7 +11,7 @@ class WhereCondOperationNetProxy(ModuleProxy):
 
     def predict(self, top=1, keyword=None, target_path=None, extra=None):
         result = super().predict(top, 'operation', '/Where/operation')
-
+        
     def backward(self, y_pd, data_index, loss, top=1):
         gt = self.y_gt[data_index]
         loss = CrossEntropyLoss()(y_pd, gt.cuda(cuda_id))

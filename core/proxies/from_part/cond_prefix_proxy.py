@@ -35,8 +35,22 @@ class FromCondPrefixNetProxy(ModuleProxy):
         # init data
         with open(DLSet.result_folder_link + '/From/N', 'r') as f:
             info = json.load(f)
-            self.X_id = np.array(info['X_id'], dtype=np.int32)
-            self.prefix_N = np.array(info['N'], dtype=np.int32)
+            self.X_id = info['X_id']
+            self.prefix_N = info['N']
+
+            X_id = []
+            prefix = []
+            print('before', self.prefix_N)
+
+            num = len(self.X_id)
+            for i in range(num):
+                if self.prefix_N[i] != 0:
+                    X_id.append(self.X_id[i])
+                    prefix.append(self.prefix_N[i])
+
+            self.prefix_N = np.array(prefix, dtype=np.int32)
+            self.X_id = np.array(X_id, dtype=np.int32)
+            print('after', self.prefix_N)
 
         # init data
         self.total = self.X_id.shape[0]
@@ -54,5 +68,5 @@ class FromCondPrefixNetProxy(ModuleProxy):
         loss = -torch.sum(col_mask_loss) / torch.sum(self.header_mask[data_index])
         return super().backward(y_pd, data_index, loss, top=(self.prefix_N, self.valid_prefix_N))
 
-    def predict(self, top=1, keyword=None, target_path=None):
-        result = super().predict(self.prefix_N + 1, 'prefix', '/From/prefix')
+    def predict(self, top=1, keyword=None, target_path=None, extra=None):
+        result = super().predict(self.prefix_N, 'prefix', '/From/prefix')

@@ -54,5 +54,5 @@ class HavingCondPrefixNetProxy(ModuleProxy):
         loss = -torch.sum(col_mask_loss) / torch.sum(self.header_mask[data_index])
         return super().backward(y_pd, data_index, loss, top=(self.prefix_N, self.valid_prefix_N))
 
-    def predict(self, top=1, keyword=None, target_path=None):
+    def predict(self, top=1, keyword=None, target_path=None, extra=None):
         result = super().predict(self.prefix_N + 1, 'prefix', '/Having/prefix')

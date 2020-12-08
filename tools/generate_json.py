@@ -161,7 +161,7 @@ def gen_groupBy():
     return res
 
 
-def gen_from(select_info):
+def gen_from(select_info, where_info=None, having_info=None):
     with open(result_path + 'From/J', 'r') as f:
         J = json.load(f)
     with open(result_path + 'From/N', 'r') as f:
@@ -183,7 +183,7 @@ def gen_from(select_info):
     for k in sql.keys():
         num, prefix, suffix = sql[k]['N'], sql[k]['prefix'], sql[k]['suffix']
         if not num:
-            res[k] = []
+            res[k] = {}
             continue
         select = [[0, 0, 2, 0, 0, 0,{}] for _ in range(num)]
         select = select_insert(select, prefix, 0)
@@ -196,16 +196,55 @@ def gen_from(select_info):
         db = idToDB[k]
         table_ids = set()
         for it in select_info[k]:
-            if it[0]!=-1:
-                table_id = dbToCol[db][it[0]]
-                table_ids.add(table_id[0])
-            if it[3]!=0:
-                table_id = dbToCol[db][it[0]]
-                table_ids.add(table_id[0])
+            if it[0] != -1:
+                try:
+                    table_id = dbToCol[db][it[0]]
+                    table_ids.add(table_id[0])
+                except: pass
+            if it[3] != 0:
+                try:
+                    table_id = dbToCol[db][it[0]]
+                    table_ids.add(table_id[0])
+                except: pass
+        if not where_info: continue
+        for it in where_info[k]:
+            if type(it) != list:
+                continue
+            if it[0] != -999:
+                try:
+                    table_id = dbToCol[db][it[0]]
+                    table_ids.add(table_id[0])
+                except: pass
+            if it[5] != -999 and it[5] != 0:
+                try:
+                    table_id = dbToCol[db][it[0]]
+                    table_ids.add(table_id[0])
+                except: pass
+        for it in having_info[k]:
+            if type(it) != list:
+                continue
+            if it[0] != -999:
+                try:
+                    table_id = dbToCol[db][it[0]]
+                    table_ids.add(table_id[0])
+                except: pass
+            if it[5] != -999 and it[5]!= 0:
+                try:
+                    table_id = dbToCol[db][it[0]]
+                    table_ids.add(table_id[0])
+                except: pass
+
         tmp = [['table_id', it] for it in table_ids]
         res[k]['table_ids'] = tmp
 
     return res
+
+
+def put_all_together(select, orderBy, limit, groupBy, From):
+    idToDB = initDic(datapath)
+    for i in select.keys():
+        pass
+
 
 
 select = gen_select()
@@ -214,5 +253,7 @@ limit = gen_limit()
 groupBy = gen_groupBy()
 From = gen_from(select)
 print("end")
+
+
 
 

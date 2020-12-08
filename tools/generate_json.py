@@ -156,8 +156,58 @@ class JsonGenerator:
         select_json, order_json, group_json = self.gen_select(), self.gen_orderBy(), self.gen_groupBy()
         where_json, having_json, limit_json = self.gen_others()
         from_json = self.gen_from(select_json, where_json, having_json)
-        sqls = []
+        sql = {}
         for k in select_json.keys():
-            sql = {}
-            sql['']
+            sql = {'select': select_json[k], 'from': from_json[k], 'where':where_json[k], 'groupBy': group_json[k],
+                   'orderBy': order_json[k], 'having': having_json[k], 'limit': limit_json[k],
+                   'except': {}, 'union': {}, 'intersect': {}}
+            sql[k] = sql
+
+        return sql
+
+
+class OutPutModule:
+    def __init__(self, file_path, data_path, schema_path, sub_file_path=None):
+        self.file_path = file_path
+        self.sub_file_path = sub_file_path
+        self.data_path = data_path
+        self.schema_path = schema_path
+        self.idToDB = initDic(datapath)
+        self.sql = JsonGenerator(file_path, data_path, schema_path)
+        self.sub_sql = JsonGenerator(sub_file_path, data_path, schema_path)
+
+    def load_combination(self):
+        with open(self.file_path + 'Combination/comb', 'r') as f:
+            comb = json.load(f)
+        res = {}
+        for i in range(len(comb['comb'])):
+            res[comb['question_id'][i]] = comb['comb'][i]
+        return res
+
+    def start(self, mode=True):
+        comb_json = self.load_combination()
+        sql = self.sql.merge_sql()
+        res = []
+        if mode:
+            sub_sql = self.sub_sql.merge_sql()
+            for k in comb_json.keys():
+                item = {'question_id': k, 'db_name': self.idToDB[k]}
+                if comb_json[k] == 0:
+                    item['sql'] = sql
+                if comb_json[k] == 1:
+                    sql['except'] = sub_sql
+                if comb_json[k] == 2:
+                    sql['union'] = sub_sql
+                if comb_json[k] == 3:
+                    sql['intersect'] = sub_sql
+                item['sql'] = sql
+                res.append(item)
+        else:
+            for k in comb_json.keys():
+                res.append({'question_id': k, 'db_name': self.idToDB[k], 'sql': sql})
+        with open('res.json', 'w') as f:
+            json.dump(res, f)
+        print("save answer success!")
+
+
 

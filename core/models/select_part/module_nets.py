@@ -48,10 +48,10 @@ class SelAggNet(nn.Module):
         if gpu:
             self.cuda(cuda_id)
 
-    def forward(self,data_holder, X_id, sel_cols):
+    def forward(self, data_holder, X_id, sel_cols):
         cls, out, col_att = self.base_net(data_holder, X_id)
 
-        b = len(out)
+        b = len(X_id)
         col_len = [len(col) for col in sel_cols]
         t = sum(col_len)
         if self.gpu:

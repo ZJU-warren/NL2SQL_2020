@@ -164,7 +164,6 @@ class ModuleProxy:
 
     def forward(self, data_index):
         y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index])
-
         return self.backward(y_pd_score, data_index, None)
 
     def backward(self, y_pd, data_index, loss, top=None):
@@ -195,7 +194,11 @@ class ModuleProxy:
             data_index = random.sample([i for i in range(total_valid)], 15)
             # data_index = [i for i in range(total_valid)]
             gt = self.valid_y_gt[data_index]
+
+            temp_mode = self.mode
+            self.mode = 'Valid'
             y_pd_valid = self.target_net(self.valid_data_holder, self.valid_X_id[data_index])
+            self.mode = temp_mode
 
             if top is None:
                 acc_value_valid = acc(y_pd_valid.data.cpu().numpy(), gt)

@@ -38,12 +38,12 @@ class DataPreprocessor:
             content = json.load(f)
         with open(DLSet.raw_schema_link % data_source, 'r') as f:
             schema = json.load(f)
-
+        
         # clear the folder and generate new one
         generate_new_folder(DLSet.main_folder_link % data_source)
 
         # generate X after tokenizer
-        # DataPreprocessor.__generate_X(data, content, schema, DLSet.X_link % data_source)
+        DataPreprocessor.__generate_X(data, content, schema, DLSet.X_link % data_source)
 
         # in cheat mode, the ground truth should be format as y
         if cheat_mode is False:

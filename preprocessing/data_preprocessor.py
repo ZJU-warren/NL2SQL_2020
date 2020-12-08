@@ -228,7 +228,8 @@ class DataPreprocessor:
             'question_id': question_id,
             'db_name': db_name,
         }
-
+        print(store_link)
+        print('X is', len(X['input_ids']))
         with open(store_link, 'w') as f:
             f.write(json.dumps(X, ensure_ascii=False, indent=4, separators=(',', ':')))
 
@@ -474,7 +475,10 @@ class DataPreprocessor:
                 # sqls
                 else:
                     X_gt_sup_sqls['X_id'].append(i)
-                    y_gt_sqls['sqls'].append(target_sqls)
+                    temp = data[i].copy()
+                    temp['sql'] = target_sqls
+                    y_gt_sqls['sqls'].append(temp)
+                    # y_gt_sqls['sqls'].append(target_sqls)
 
                     # print('num of sqls:', len(data[i]['sql']['from']['table_ids']))
                     # print('\t select:', data[i]['sql']['select'])
@@ -600,7 +604,10 @@ class DataPreprocessor:
                                 y_gt_suffix['suffix'].append(DataPreprocessor.col_map(_[5]))
                             else:
                                 X_gt_sup_sql['X_id'].append(i)
-                                y_gt_sql['sql'].append(_[6])
+                                temp = data[i].copy()
+                                temp['sql'] = _[6]
+                                y_gt_sql['sql'].append(temp)
+                                # y_gt_sql['sql'].append(_[6])
 
                 X_gt_sup_prefix['X_id'].append(i)
                 X_gt_sup_prefix['N'].append(N)
@@ -800,7 +807,11 @@ class DataPreprocessor:
 
                             else:
                                 X_gt_sup_sql['X_id'].append(i)
-                                y_gt_sql['sql'].append(_[6])
+
+                                temp = data[i].copy()
+                                temp['sql'] = _[6]
+                                y_gt_sql['sql'].append(temp)
+                                # y_gt_sql['sql'].append(temp['sql'])
 
                 X_gt_sup_prefix['X_id'].append(i)
                 X_gt_sup_prefix['N'].append(N)
@@ -977,17 +988,23 @@ class DataPreprocessor:
                 if len(data[i]['sql']['except']):
                     comb = 1
                     X_gt_sup_sql['X_id'].append(i)
-                    y_gt_sql['sql'].append(data[i]['sql']['except'])
+                    temp = data[i].copy()
+                    temp['sql'] = data[i]['sql']['except']
+                    y_gt_sql['sql'].append(temp)
 
                 elif len(data[i]['sql']['union']):
                     comb = 2
                     X_gt_sup_sql['X_id'].append(i)
-                    y_gt_sql['sql'].append(data[i]['sql']['union'])
+                    temp = data[i].copy()
+                    temp['sql'] = data[i]['sql']['union']
+                    y_gt_sql['sql'].append(temp)
 
                 elif len(data[i]['sql']['intersect']):
                     comb = 3
                     X_gt_sup_sql['X_id'].append(i)
-                    y_gt_sql['sql'].append(data[i]['sql']['intersect'])
+                    temp = data[i].copy()
+                    temp['sql'] = data[i]['sql']['intersect']
+                    y_gt_sql['sql'].append(temp)
 
                 else:
                     comb = 0

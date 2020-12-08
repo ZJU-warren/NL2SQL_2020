@@ -213,7 +213,7 @@ class ModuleProxy:
             y_pd_valid = self.target_net(self.valid_data_holder, self.valid_X_id[data_index])
 
             if self.header_mask is not None:
-                y_pd_valid = self.header_mask * y_pd_valid
+                y_pd_valid = self.header_mask[data_index] * y_pd_valid
 
             if top is None:
                 acc_value_valid = acc(y_pd_valid.data.cpu().numpy(), gt)

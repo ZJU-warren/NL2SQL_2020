@@ -53,6 +53,7 @@ class MainProxy:
         self.combination_proxy = CombinationProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
 
     def run(self):
+
         if self.mode:
             self.select_proxy.predict()
             self.from_proxy.predict()
@@ -64,19 +65,20 @@ class MainProxy:
             self.combination_proxy.predict()
 
         else:
+            self.flag = 'where'
             for _ in range(self.epoch):
                 # self.select_proxy.run_a_epoch()
                 # self.from_proxy.run_a_epoch()
-                # self.where_proxy.run_a_epoch()
+                self.where_proxy.run_a_epoch()
                 # self.having_proxy.run_a_epoch()
-                self.groupby_proxy.run_a_epoch()
-                self.orderby_proxy.run_a_epoch()
-                self.limit_proxy.run_a_epoch()
-                self.combination_proxy.run_a_epoch()
+                # self.groupby_proxy.run_a_epoch()
+                # self.orderby_proxy.run_a_epoch()
+                # self.limit_proxy.run_a_epoch()
+                # self.combination_proxy.run_a_epoch()
             self.save_model()
 
     def save_model(self):
-        torch.save(self.base_net.state_dict(), DLSet.model_folder_link + '/%s' % self.__class__)
+        torch.save(self.base_net.state_dict(), DLSet.model_folder_link + '/%s_%s' % (self.flag, self.__class__))
 
     def load_model(self):
-        self.base_net.load_state_dict(torch.load(DLSet.model_folder_link + '/%s' % self.__class__))
+        self.base_net.load_state_dict(torch.load(DLSet.model_folder_link + '/%s_%s' % (self.flag, self.__class__)))

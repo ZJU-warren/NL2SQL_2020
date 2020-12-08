@@ -200,7 +200,6 @@ class ModuleProxy:
 
             # @validation
             total_valid = len(self.valid_y_gt)
-            print('[[[[[[[[[[[[[[', len(self.valid_X_id), total_valid)
             data_index = random.sample([i for i in range(total_valid)], 8)
 
             gt = self.valid_y_gt[data_index]

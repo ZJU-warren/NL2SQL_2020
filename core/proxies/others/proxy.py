@@ -176,7 +176,7 @@ class ModuleProxy:
 
         acc_value_valid = -1
 
-        if self.step % 20 == 0:
+        if self.step % 10 == 0:
             print('-- loss_cpu', self.loss.data.cpu().numpy())
             self.optimizer.step()
             self.optimizer.zero_grad()
@@ -192,7 +192,7 @@ class ModuleProxy:
 
             # @validation
             total_valid = len(self.valid_y_gt)
-            data_index = random.sample([i for i in range(total_valid)], 10)
+            data_index = random.sample([i for i in range(total_valid)], 15)
             # data_index = [i for i in range(total_valid)]
             gt = self.valid_y_gt[data_index]
             y_pd_valid = self.target_net(self.valid_data_holder, self.valid_X_id[data_index])

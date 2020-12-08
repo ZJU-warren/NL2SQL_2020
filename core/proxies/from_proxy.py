@@ -38,9 +38,9 @@ class FromProxy:
 
     def run_a_epoch(self):
         self.n_cond_proxy.run_a_epoch()
-        self.cond_prefix_proxy.run_a_epoch()
-        self.cond_suffix_proxy.run_a_epoch()
-        self.j_cond_proxy.run_a_epoch()
+        # self.cond_prefix_proxy.run_a_epoch()
+        # self.cond_suffix_proxy.run_a_epoch()
+        # self.j_cond_proxy.run_a_epoch()
 
     def predict(self):
         self.n_cond_proxy = FromNCondNetProxy(self.base_net, predict_mode=self.mode,

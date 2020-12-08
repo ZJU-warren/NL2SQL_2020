@@ -83,8 +83,8 @@ class ModuleProxy:
                                               self.X_id[start: end]).data.cpu().numpy())
             if start % 100 == 0:
                 print("predict: [%d, ~]" % start)
-            # if end == self.total:
-            if end == 20: #!!!!!
+
+            if end == self.total:
                 break
             i += 1
             torch.cuda.empty_cache()
@@ -130,7 +130,6 @@ class ModuleProxy:
             data_index = list(range(self.start, end))
 
             # forward
-
             acc_value_valid = self.forward(data_index)
 
             # step
@@ -195,10 +194,7 @@ class ModuleProxy:
             # data_index = [i for i in range(total_valid)]
             gt = self.valid_y_gt[data_index]
 
-            temp_mode = self.mode
-            self.mode = 'Valid'
             y_pd_valid = self.target_net(self.valid_data_holder, self.valid_X_id[data_index])
-            self.mode = temp_mode
 
             if top is None:
                 acc_value_valid = acc(y_pd_valid.data.cpu().numpy(), gt)

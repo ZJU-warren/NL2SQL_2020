@@ -5,6 +5,8 @@ from GlobalParameters import cuda_id
 import DataLinkSet as DLSet
 import json
 import numpy as np
+from tools.metrics import acc
+import random
 
 
 class SelectColAggNetProxy(ModuleProxy):
@@ -48,18 +50,43 @@ class SelectColAggNetProxy(ModuleProxy):
         self.total = self.X_id.shape[0]
 
     def forward(self, data_index):
-        print("---------------- forward with mode : -------------", self.mode)
-        if self.mode == 'Valid':
-            y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index], self.valid_prefix[data_index])
-        else:
-            y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index], self.prefix[data_index])
+        y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index], self.prefix[data_index])
         return self.backward(y_pd_score, data_index, None)
-
-    def backward(self, y_pd, data_index, loss, top=1):
-        print(type(data_index))
-        gt = self.y_gt[data_index]
-        loss = CrossEntropyLoss()(y_pd, gt.cuda(cuda_id))
-        return super().backward(y_pd, data_index, loss)
 
     def predict(self, top=1, keyword=None, target_path=None, extra=None):
         result = super().predict(top, 'agg', '/Select/agg')
+
+    def backward(self, y_pd, data_index, loss, top=1):
+        gt = self.y_gt[data_index]
+        loss = CrossEntropyLoss()(y_pd, gt.cuda(cuda_id))
+
+        self.avg_loss = (self.avg_loss * self.step + loss.data.cpu().numpy()) / (self.step + 1)
+
+        self.step += 1
+        self.loss = loss
+        self.loss.backward()
+
+        acc_value_valid = -1
+
+        if self.step % 1 == 0:
+            print('-- loss_cpu', self.loss.data.cpu().numpy())
+            self.optimizer.step()
+            self.optimizer.zero_grad()
+
+            # calculate acc
+            # @train
+            gt = self.y_gt[data_index]
+            acc_value = acc(y_pd.data.cpu().numpy(), gt)
+            print('%s -- acc@train' % self.__class__.__name__, acc_value)
+
+            # @validation
+            total_valid = len(self.valid_y_gt)
+            data_index = random.sample([i for i in range(total_valid)], 15)
+            # data_index = [i for i in range(total_valid)]
+            gt = self.valid_y_gt[data_index]
+            y_pd_valid = self.target_net(self.train_data_holder, self.X_id[data_index], self.valid_prefix[data_index])
+            acc_value_valid = acc(y_pd_valid.data.cpu().numpy(), gt)
+            print('%s -- acc@valid' % self.__class__.__name__, acc_value_valid)
+            self.step = 0
+
+        return acc_value_valid

@@ -54,14 +54,15 @@ class MainProxy:
 
     def run(self):
         if self.mode:
-            # self.select_proxy.predict()
-            # self.from_proxy.predict()
+            self.select_proxy.predict()
+            self.from_proxy.predict()
             self.where_proxy.predict()
-            # self.having_proxy.predict()
-            # self.groupby_proxy.predict()
-            # self.orderby_proxy.predict()
-            # self.limit_proxy.predict()
-            # self.combination_proxy.predict()
+            self.having_proxy.predict()
+            self.groupby_proxy.predict()
+            self.orderby_proxy.predict()
+            self.limit_proxy.predict()
+            self.combination_proxy.predict()
+
         else:
             for _ in range(self.epoch):
                 self.select_proxy.run_a_epoch()

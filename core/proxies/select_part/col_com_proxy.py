@@ -1,4 +1,4 @@
-from core.models.where_part.module_nets import CondComNet
+from core.models.select_part.module_nets import SelOpNet
 from core.proxies.others.proxy import ModuleProxy
 from torch.nn import CrossEntropyLoss
 from GlobalParameters import cuda_id
@@ -11,9 +11,9 @@ class SelectColComNetProxy(ModuleProxy):
     def __init__(self, base_net, predict_mode=False, train_data_holder=None,
                  valid_data_holder=None, test_data_holder=None):
         super(SelectColComNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
-        self._init_train(base_net, CondComNet, 'Select', 'com', True)
+        self._init_train(base_net, SelOpNet, 'Select', 'com', True)
 
-    def predict(self, top=1, keyword=None, target_path=None):
+    def predict(self, top=1, keyword=None, target_path=None, extra=None):
         result = super().predict(top, 'com', '/Select/com')
 
     def backward(self, y_pd, data_index, loss, top=1):

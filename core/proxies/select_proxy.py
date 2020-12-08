@@ -58,30 +58,30 @@ class SelectProxy:
                                               test_data_holder=self.test_data_holder)
         self.n_col_proxy.predict()
 
-        # self.col_prefix_proxy \
-        #     = ColPrefixNetProxy(self.base_net, predict_mode=self.mode,
-        #                         train_data_holder=self.train_data_holder,
-        #                         valid_data_holder=self.valid_data_holder,
-        #                         test_data_holder=self.test_data_holder)
-        # self.col_prefix_proxy.predict()
-        #
-        # self.col_agg_proxy \
-        #     = ColAggNetProxy(self.base_net, predict_mode=self.mode,
-        #                      train_data_holder=self.train_data_holder,
-        #                      valid_data_holder=self.valid_data_holder,
-        #                      test_data_holder=self.test_data_holder)
-        # self.col_agg_proxy.predict()
-        #
-        # self.col_com_proxy \
-        #     = ColComNetProxy(self.base_net, predict_mode=self.mode,
-        #                      train_data_holder=self.train_data_holder,
-        #                      valid_data_holder=self.valid_data_holder,
-        #                      test_data_holder=self.test_data_holder)
-        # self.col_com_proxy.predict()
-        #
-        # self.col_suffix_proxy \
-        #     = ColSuffixNetProxy(self.base_net, predict_mode=self.mode,
-        #                         train_data_holder=self.train_data_holder,
-        #                         valid_data_holder=self.valid_data_holder,
-        #                         test_data_holder=self.test_data_holder)
-        # self.col_suffix_proxy.predict()
+        self.col_prefix_proxy \
+            = SelectColPrefixNetProxy(self.base_net, predict_mode=self.mode,
+                                train_data_holder=self.train_data_holder,
+                                valid_data_holder=self.valid_data_holder,
+                                test_data_holder=self.test_data_holder)
+        self.col_prefix_proxy.predict()
+
+        self.col_agg_proxy \
+            = SelectColAggNetProxy(self.base_net, predict_mode=self.mode,
+                             train_data_holder=self.train_data_holder,
+                             valid_data_holder=self.valid_data_holder,
+                             test_data_holder=self.test_data_holder)
+        self.col_agg_proxy.predict()
+
+        self.col_com_proxy \
+            = SelectColComNetProxy(self.base_net, predict_mode=self.mode,
+                             train_data_holder=self.train_data_holder,
+                             valid_data_holder=self.valid_data_holder,
+                             test_data_holder=self.test_data_holder)
+        self.col_com_proxy.predict()
+
+        self.col_suffix_proxy \
+            = SelectColSuffixNetProxy(self.base_net, predict_mode=self.mode,
+                                train_data_holder=self.train_data_holder,
+                                valid_data_holder=self.valid_data_holder,
+                                test_data_holder=self.test_data_holder)
+        self.col_suffix_proxy.predict()

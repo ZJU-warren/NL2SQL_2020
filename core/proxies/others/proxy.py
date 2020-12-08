@@ -69,10 +69,9 @@ class ModuleProxy:
         self.loss = 0
         self.step = 0
         self.start = 0
-
         self.need_train = True
 
-    def predict(self, top=1, keyword=None, target_path=None):
+    def predict(self, top=1, keyword=None, target_path=None, extra=None):
         y_pd_score = []
         self.target_net.eval()
 
@@ -80,12 +79,17 @@ class ModuleProxy:
         while True:
             start = i * 10
             end = min((i + 1) * 10, self.total)
-            y_pd_score.extend(self.target_net(self.test_data_holder,
-                                              self.X_id[start: end]).data.cpu().numpy())
+            if extra is None:
+                y_pd_score.extend(self.target_net(self.test_data_holder,
+                                                  self.X_id[start: end]).data.cpu().numpy())
+            else:
+                y_pd_score.extend(self.target_net(self.test_data_holder,
+                                                  self.X_id[start: end], extra[start: end]).data.cpu().numpy())
             if start % 100 == 0:
                 print("predict: [%d, ~]" % start)
-            # if end == self.total:
-            if end == 20: #!!!!!
+
+            if end == self.total:#!!!!!
+            # if end == 20:
                 break
             i += 1
             torch.cuda.empty_cache()
@@ -149,7 +153,7 @@ class ModuleProxy:
             # break #!!!!!
 
         if self.last_acc > 0.8 and self.best_acc < self.last_acc: #!!!!!
-        #if True:
+        # if True:
             print('=============== save the best model [%s] with acc %f ================='
                   % (self.__class__.__name__, self.last_acc))
             self.save_model()
@@ -164,7 +168,6 @@ class ModuleProxy:
 
     def forward(self, data_index):
         y_pd_score = self.target_net(self.train_data_holder, self.X_id[data_index])
-
         return self.backward(y_pd_score, data_index, None)
 
     def backward(self, y_pd, data_index, loss, top=None):
@@ -192,9 +195,11 @@ class ModuleProxy:
 
             # @validation
             total_valid = len(self.valid_y_gt)
-            data_index = random.sample([i for i in range(total_valid)], 15)
+            # data_index = random.sample([i for i in range(total_valid)], 15) # !!!!
+            data_index = random.sample([i for i in range(total_valid)], 10)
             # data_index = [i for i in range(total_valid)]
             gt = self.valid_y_gt[data_index]
+
             y_pd_valid = self.target_net(self.valid_data_holder, self.valid_X_id[data_index])
 
             if top is None:

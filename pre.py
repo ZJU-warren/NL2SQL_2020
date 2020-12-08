@@ -4,7 +4,7 @@ import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_data_ratio', type=float, default=0.9, help='Batch size')
+    parser.add_argument('--test_data_ratio', type=float, default=0.1, help='Batch size')
     args = parser.parse_args()
 
     DataGenerator.data_generate([1, 2, 3], cheat_mode=True, test_data_ratio=args.test_data_ratio)

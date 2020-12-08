@@ -130,15 +130,6 @@ def gen_orderBy():
     return res
 
 
-def gen_limit():
-    with open(result_path + 'Limit/need', 'r') as f:
-        limit = json.load(f)
-    res = {}
-    for i in range(len(limit[qd])):
-        res[limit[qd][i]] = limit['need'][i]
-    return res
-
-
 def gen_groupBy():
     with open(result_path + 'GroupBy/col', 'r') as f:
         col = json.load(f)
@@ -206,6 +197,9 @@ def gen_from(select_info, where_info=None, having_info=None):
                     table_id = dbToCol[db][it[0]]
                     table_ids.add(table_id[0])
                 except: pass
+        tmp = [['table_id', it] for it in table_ids]
+        res[k]['table_ids'] = tmp
+
         if not where_info: continue
         for it in where_info[k]:
             if type(it) != list:
@@ -240,20 +234,14 @@ def gen_from(select_info, where_info=None, having_info=None):
     return res
 
 
-def put_all_together(select, orderBy, limit, groupBy, From):
+def put_all_together(select, orderBy, limit, groupBy, From, ):
     idToDB = initDic(datapath)
     for i in select.keys():
         pass
 
 
-
 select = gen_select()
 orderBy = gen_orderBy()
-limit = gen_limit()
 groupBy = gen_groupBy()
 From = gen_from(select)
 print("end")
-
-
-
-

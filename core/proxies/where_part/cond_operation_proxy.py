@@ -10,7 +10,7 @@ class CondOperationNetProxy(ModuleProxy):
         self._init_env(base_net, CondOperationNet, 'Where', 'operation', True)
 
     def predict(self, top=1, keyword=None, target_path=None):
-        result = super().predict(top, 'operation', '/Select/operation')
+        result = super().predict(top, 'operation', '/Where/operation')
 
     def backward(self, y_pd, data_index, loss, top=1):
         gt = self.y_gt[data_index]

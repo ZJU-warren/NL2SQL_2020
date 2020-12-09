@@ -1,4 +1,4 @@
-cuda_id = 2
+cuda_id = 0
 inf = 0x3f3f
 max_columns_number = 44
 max_table_column_len = 39

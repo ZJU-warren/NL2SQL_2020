@@ -15,8 +15,8 @@ class SelectColComNetProxy(ModuleProxy):
         super()._init_train(base_net, target_net, part_name, file_name, tensor=True)
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None,
-                 valid_data_holder=None, test_data_holder=None):
-        super(SelectColComNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
+                 valid_data_holder=None, test_data_holder=None, thres=0.95):
+        super(SelectColComNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder, thres=thres)
         self._init_env(base_net, SelOpNet, 'Select', 'com', True)
 
     # init data

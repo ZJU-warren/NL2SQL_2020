@@ -53,10 +53,11 @@ class ModuleProxy:
         # epoch init
         self.total = self.y_gt.shape[0]
         self.start = 0
-        self.batch_size = max(self.total // self.batch, 5)
+        self.batch_size = 8
         self.optimizer = optim.Adam(self.target_net.parameters(), lr=learning_rate)
 
-    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None, batch=1500, thres=0.99):
+    def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None,
+                 test_data_holder=None, batch=1500, thres=0.99):
         self.thres = thres
         self.mode = predict_mode
         self.batch = batch

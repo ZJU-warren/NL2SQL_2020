@@ -53,9 +53,9 @@ class WhereProxy:
                                           test_data_holder=self.test_data_holder)
 
     def run_a_epoch(self):
-        # torch.cuda.empty_cache()
-        # time.sleep(2)
-        # self.n_cond_proxy.run_a_epoch()
+        torch.cuda.empty_cache()
+        time.sleep(2)
+        self.n_cond_proxy.run_a_epoch()
         #
         # torch.cuda.empty_cache()
         # time.sleep(2)
@@ -68,10 +68,10 @@ class WhereProxy:
         # torch.cuda.empty_cache()
         # time.sleep(2)
         # self.cond_com_proxy.run_a_epoch()
-
-        torch.cuda.empty_cache()
-        time.sleep(2)
-        self.cond_eq_proxy.run_a_epoch()
+        #
+        # torch.cuda.empty_cache()
+        # time.sleep(2)
+        # self.cond_eq_proxy.run_a_epoch()
         #
         # torch.cuda.empty_cache()
         # time.sleep(2)

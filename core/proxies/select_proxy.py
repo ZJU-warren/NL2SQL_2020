@@ -26,7 +26,7 @@ class SelectProxy:
                 = SelectColPrefixNetProxy(self.base_net, predict_mode=self.mode,
                                           train_data_holder=self.train_data_holder,
                                           valid_data_holder=self.valid_data_holder,
-                                          test_data_holder=self.test_data_holder, thres=0.40)
+                                          test_data_holder=self.test_data_holder)
 
             self.col_agg_proxy \
                 = SelectColAggNetProxy(self.base_net, predict_mode=self.mode,

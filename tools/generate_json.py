@@ -1,6 +1,7 @@
 import json
 import os
 from tools.utils import *
+print(os.getcwd())
 
 
 class JsonGenerator:
@@ -23,13 +24,17 @@ class JsonGenerator:
             select_com = json.load(f)
         with open(self.file_path + 'Select/suffix', 'r') as f:
             select_suffix = json.load(f)
-        select_prefix = index_trans(select_prefix, 'prefix')
-        select_suffix = index_trans(select_suffix, 'suffix')
+
+        # 对于select 的 column index 而言，前列和后列相同规则
+        select_prefix = index_trans(select_prefix, 'prefix', 'select')
+        select_suffix = index_trans(select_suffix, 'suffix', 'select')
 
         sql = {}
         # select
+        # 以每个 question_id 为索引
         for i in select_k[self.qid]:
-            sql[i] = {'K': [], 'prefix': [], 'agg': [], 'com': [], 'suffix': []}
+            sql[i] = {'K': [], 'prefix': [],
+                      'agg': [], 'com': [], 'suffix': []}
         sql = rebuild(sql, select_k, 'K', True)
         sql = rebuild(sql, select_prefix, 'prefix', True)
         sql = rebuild(sql, select_agg, 'agg')
@@ -39,7 +44,9 @@ class JsonGenerator:
         for k in sql.keys():
             num, prefix, agg, com, suffix = sql[k]['K'], sql[k]['prefix'], sql[k]['agg'], sql[k]['com'], sql[k][
                 'suffix']
-            if not num: continue
+            if not num:
+                continue
+            # 对于 select 的每个子句，中间四个都是 0
             select = [[0, 0, 0, 0] for _ in range(num)]
             select = select_insert(select, prefix, 0)
             select = select_insert(select, agg, 1)
@@ -79,6 +86,7 @@ class JsonGenerator:
         res = {}
         sql = {}
         for i in range(len(need[self.qid])):
+            # sql[id] = {"need" ,"col"}
             sql[need[self.qid][i]] = {'need': need['need'][i], 'col': []}
         for i in range(len(col[self.qid])):
             sql[col[self.qid][i]]['col'].append(col['col'][i])
@@ -120,6 +128,7 @@ class JsonGenerator:
             select = select_insert(select, suffix, 5)
             res[k] = {'conds': select, 'table_ids': []}
 
+        # 从 select 和 where 中得到有多少个 table
         for k in select_info.keys():
             db = self.idToDB[k]
             columns = []
@@ -127,7 +136,7 @@ class JsonGenerator:
             columns.extend([it[0] for it in select_info[k]])
             columns.extend([it[3] for it in select_info[k]])
             columns.extend([it[0] for it in where_info[k]])
-            columns.extend([it[5] for it in where_info[k]])
+            # columns.extend([it[5] for it in where_info[k]])
 
             for i in columns:
                 if i == -1 or i == 0 or i == -999:
@@ -154,12 +163,13 @@ class JsonGenerator:
         return where, having, limit
 
     def merge_sql(self):
-        select_json, order_json, group_json = self.gen_select(), self.gen_orderBy(), self.gen_groupBy()
+        select_json, order_json, group_json = self.gen_select(
+        ), self.gen_orderBy(), self.gen_groupBy()
         where_json, having_json, limit_json = self.gen_others()
         from_json = self.gen_from(select_json, where_json)
         sql = {}
         for k in select_json.keys():
-            sql = {'select': select_json[k], 'from': from_json[k], 'where':where_json[k], 'groupBy': group_json[k],
+            sql = {'select': select_json[k], 'from': from_json[k], 'where': where_json[k], 'groupBy': group_json[k],
                    'orderBy': order_json[k], 'having': having_json[k],
                    'except': {}, 'union': {}, 'intersect': {}}
             sql[k] = sql
@@ -185,7 +195,7 @@ class OutPutModule:
             res[comb['question_id'][i]] = comb['comb'][i]
         return res
 
-    def start(self, path,mode=True):
+    def start(self, path, mode=True):
         comb_json = self.load_combination()
         sql = self.sql.merge_sql()
         res = []
@@ -205,13 +215,14 @@ class OutPutModule:
                 res.append(item)
         else:
             for k in comb_json.keys():
-                res.append({'question_id': k, 'db_name': self.idToDB[k], 'sql': sql})
+                res.append(
+                    {'question_id': k, 'db_name': self.idToDB[k], 'sql': sql})
         with open(path+'/res.json', 'w') as f:
             json.dump(res, f)
         print("save answer success!")
 
 
-result_path = "../../Result/"
+result_path = "/Users/cindy/others/Result/"
 datapath = result_path+'data.json'
 schema_path = result_path+'db_schema.json'
 out = OutPutModule(result_path, datapath, schema_path)

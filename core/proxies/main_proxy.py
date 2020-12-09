@@ -65,7 +65,9 @@ class MainProxy:
             # self.combination_proxy.predict()
 
         else:
+
             self.flag = 'where-eq'
+
             for _ in range(self.epoch):
                 # self.select_proxy.run_a_epoch()
                 # self.from_proxy.run_a_epoch()

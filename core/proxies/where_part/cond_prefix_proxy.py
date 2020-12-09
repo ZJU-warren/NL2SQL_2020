@@ -60,8 +60,10 @@ class WhereCondPrefixNetProxy(ModuleProxy):
         self.total = self.X_id.shape[0]
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None,
-                 valid_data_holder=None, test_data_holder=None):
-        super(WhereCondPrefixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
+                 valid_data_holder=None, test_data_holder=None, thres=0.8):
+        print("______thres = %f [%s]" % (thres, self.__class__.__name__))
+
+        super(WhereCondPrefixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder, thres=thres)
         self._init_env(base_net, CondPrefixNet, 'Where', 'prefix')
 
     def backward(self, y_pd, data_index, loss, top=None):

@@ -28,12 +28,18 @@ class WhereCondSuffixNetProxy(ModuleProxy):
             self.X_id = np.array(X_id, dtype=np.int32)
 
         # init data
+        self.header_mask = torch.zeros((self.X_id.shape[0], max_columns_number)).cuda(cuda_id)
+        for i in range(self.X_id.shape[0]):
+            col_num = self.test_data_holder.col_num(self.X_id[i])
+            self.header_mask[i, :col_num] = 1
+
+        # init data
         self.total = self.X_id.shape[0]
 
     def __init__(self, base_net, predict_mode=False, train_data_holder=None, valid_data_holder=None,
-                 test_data_holder=None):
+                 test_data_holder=None, thres=0.4):
         super(WhereCondSuffixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder,
-                                                     test_data_holder)
+                                                     test_data_holder, thres=thres)
         self._init_env(base_net, SelSuffixColNet, 'Where', 'suffix', True)
 
     def backward(self, y_pd, data_index, loss, top=1):

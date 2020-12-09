@@ -26,6 +26,7 @@ class ModuleProxy:
         # init data
         self.X_id = np.array(range(self.test_data_holder.total))
         self.total = self.test_data_holder.total
+        # print(self.__class__.__name__, self.total)
 
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):
         # init model
@@ -57,7 +58,7 @@ class ModuleProxy:
         self.optimizer = optim.Adam(self.target_net.parameters(), lr=learning_rate)
 
     def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None,
-                 test_data_holder=None, batch=1500, thres=0.99):
+                 test_data_holder=None, batch=1500, thres=0.95):
         self.thres = thres
         self.mode = predict_mode
         self.batch = batch
@@ -76,6 +77,7 @@ class ModuleProxy:
 
     def predict(self, top=1, keyword=None, target_path=None, extra=None):
         y_pd_score = []
+        print('%s total : total = %d' % (self.__class__.__name__, self.total))
 
         i = 0
         while True:
@@ -91,7 +93,7 @@ class ModuleProxy:
 
             if self.header_mask is not None:
                 y_pd_score.extend(score * self.header_mask[start: end].data.cpu().numpy())
-                print(self.__class__.__name__)
+                # print(self.__class__.__name__)
             else:
                 y_pd_score.extend(score)
 
@@ -163,13 +165,15 @@ class ModuleProxy:
             #     break
             
         print("____________thre %f", self.thres)
-        if self.last_acc > 0.8 and self.best_acc < self.last_acc:
+        # if self.last_acc > 0.8 and self.best_acc < self.last_acc:
+        if self.last_acc > self.thres / 2 and self.best_acc < self.last_acc:
             print('=============== save the best model [%s] with acc %f ================='
                   % (self.__class__.__name__, self.last_acc))
             self.save_model()
             self.best_acc = self.last_acc
             # self.load_model()
 
+            # if self.last_acc > self.thres:
             if self.last_acc > self.thres:
                 self.need_train = False
 

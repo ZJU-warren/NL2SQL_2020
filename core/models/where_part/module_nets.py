@@ -64,4 +64,5 @@ class CondEqNet(nn.Module):
         for i in range(len(sel_cols)):
             score[i] = out[i, sel_cols[i], :].squeeze()
         score = self.linear(self.u(cls) + self.v(score))
+        # score = self.linear(cls)
         return score

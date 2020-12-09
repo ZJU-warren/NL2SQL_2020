@@ -38,7 +38,7 @@ class MainProxy:
         self.test_data_holder = None
 
         if self.mode:
-            self.flag = 'select_num-com'
+            self.flag = 'where-suffix'
             self.load_model()
             self.__init_test()
         else:
@@ -58,15 +58,15 @@ class MainProxy:
         if self.mode:
             # self.select_proxy.predict()
             # self.from_proxy.predict()
-            # self.where_proxy.predict()
+            self.where_proxy.predict()
             # self.having_proxy.predict()
             # self.groupby_proxy.predict()
             # self.orderby_proxy.predict()
             # self.limit_proxy.predict()
-            self.combination_proxy.predict()
+            # self.combination_proxy.predict()
 
         else:
-            self.flag = 'where-N'
+            self.flag = 'where-suffix'
             for _ in range(self.epoch):
                 # self.select_proxy.run_a_epoch()
                 # self.from_proxy.run_a_epoch()
@@ -76,6 +76,7 @@ class MainProxy:
                 # self.orderby_proxy.run_a_epoch()
                 # self.limit_proxy.run_a_epoch()
                 # self.combination_proxy.run_a_epoch()
+                pass
             self.save_model()
 
     def save_model(self):

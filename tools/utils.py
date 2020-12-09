@@ -53,6 +53,7 @@ def index_trans(value, key, mode=''):
 
 
 def rebuild(sql, source, key, mode=False):
+    # 遍历 source 所有的 question_id
     for i in range(len(source[qd])):
         if mode:
             sql[source[qd][i]][key] = source[key][i]
@@ -63,6 +64,8 @@ def rebuild(sql, source, key, mode=False):
 
 def select_insert(target, val, k, filt=-1):
     for i in range(len(val)):
+        # 对于 suffix，agg，com
+        # 只预测第一个，预测为0
         if filt != -1 and i > 0:
             break
         target[i][k] = val[i]

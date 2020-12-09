@@ -47,11 +47,11 @@ class SelectProxy:
                                           test_data_holder=self.test_data_holder, thres=0.90)
 
     def run_a_epoch(self):
-        self.n_col_proxy.run_a_epoch()
+        # self.n_col_proxy.run_a_epoch()
 
         # torch.cuda.empty_cache()
         # time.sleep(2)
-        # self.col_prefix_proxy.run_a_epoch()
+        self.col_prefix_proxy.run_a_epoch()
 
         # torch.cuda.empty_cache()
         # time.sleep(2)
@@ -59,7 +59,7 @@ class SelectProxy:
 
         # torch.cuda.empty_cache()
         # time.sleep(2)
-        self.col_com_proxy.run_a_epoch()
+        # self.col_com_proxy.run_a_epoch()
         #
         # torch.cuda.empty_cache()
         # time.sleep(2)

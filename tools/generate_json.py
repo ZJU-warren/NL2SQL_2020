@@ -1,7 +1,7 @@
 import json
 import os
 from tools.utils import *
-
+print(os.getcwd())
 
 class JsonGenerator:
     def __init__(self, file_path, data_path, schema_path):
@@ -23,8 +23,8 @@ class JsonGenerator:
             select_com = json.load(f)
         with open(self.file_path + 'Select/suffix', 'r') as f:
             select_suffix = json.load(f)
-        select_prefix = index_trans(select_prefix, 'prefix')
-        select_suffix = index_trans(select_suffix, 'suffix')
+        select_prefix = index_trans(select_prefix, 'prefix', 'select')
+        select_suffix = index_trans(select_suffix, 'suffix', 'select')
 
         sql = {}
         # select
@@ -211,7 +211,7 @@ class OutPutModule:
         print("save answer success!")
 
 
-result_path = "../../Result/"
+result_path = "/Users/cindy/others/Result/"
 datapath = result_path+'data.json'
 schema_path = result_path+'db_schema.json'
 out = OutPutModule(result_path, datapath, schema_path)

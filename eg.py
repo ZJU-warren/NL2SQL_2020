@@ -10,7 +10,7 @@ for it in db:
     for i in range(1, len(col_name)):
         j = int(col_name[i][0].split('_')[-1])
         y += len(table[j]+col_name[i][1])
-    if y>300: print(it['db_name'])
+    if y>400: print(it['db_name'])
     x.append(y)
 import pandas as pd
 

@@ -33,7 +33,7 @@ class FromCondSuffixNetProxy(ModuleProxy):
     def __init__(self, base_net, predict_mode=False, train_data_holder=None, valid_data_holder=None,
                  test_data_holder=None):
         super(FromCondSuffixNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder,
-                                                      test_data_holder)
+                                                      test_data_holder, thres=0.81)
         self._init_env(base_net, SelSuffixColNet, 'From', 'suffix', True)
 
     def backward(self, y_pd, data_index, loss, top=1):

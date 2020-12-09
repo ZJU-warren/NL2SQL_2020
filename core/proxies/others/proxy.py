@@ -57,7 +57,7 @@ class ModuleProxy:
         self.optimizer = optim.Adam(self.target_net.parameters(), lr=learning_rate)
 
     def __init__(self, predict_mode=False, train_data_holder=None, valid_data_holder=None,
-                 test_data_holder=None, batch=1500, thres=0.99):
+                 test_data_holder=None, batch=1500, thres=0.92):
         self.thres = thres
         self.mode = predict_mode
         self.batch = batch

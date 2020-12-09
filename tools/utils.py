@@ -35,19 +35,20 @@ def getContent(schema_path):
     return dbToColumn
 
 
-def trans(val):
+def trans(val, mode=''):
     if val == 0: return -999
-    if val == 1: return -1
+    if val == 1 and mode == 'select':
+        return -1
     return val-1
 
 
-def index_trans(value, key):
+def index_trans(value, key, mode=''):
     for i in range(len(value[key])):
         if type(value[key][i]) == int:
-            value[key][i] = trans(value[key][i])
+            value[key][i] = trans(value[key][i], mode)
         else:
             for j in range(len(value[key][i])):
-                value[key][i][j] = trans(value[key][i][j])
+                value[key][i][j] = trans(value[key][i][j], mode)
     return value
 
 

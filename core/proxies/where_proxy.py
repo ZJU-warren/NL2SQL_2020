@@ -66,13 +66,13 @@ class WhereProxy:
         #                                        valid_data_holder=self.valid_data_holder,
         #                                        test_data_holder=self.test_data_holder)
         # self.n_cond_proxy.predict()
-        #
-        # self.cond_prefix_proxy \
-        #     = WhereCondPrefixNetProxy(self.base_net, predict_mode=self.mode,
-        #                          train_data_holder=self.train_data_holder,
-        #                          valid_data_holder=self.valid_data_holder,
-        #                          test_data_holder=self.test_data_holder)
-        # self.cond_prefix_proxy.predict()
+
+        self.cond_prefix_proxy \
+            = WhereCondPrefixNetProxy(self.base_net, predict_mode=self.mode,
+                                 train_data_holder=self.train_data_holder,
+                                 valid_data_holder=self.valid_data_holder,
+                                 test_data_holder=self.test_data_holder)
+        self.cond_prefix_proxy.predict()
         #
         # self.cond_operation_proxy \
         #     = WhereCondOperationNetProxy(self.base_net, predict_mode=self.mode,

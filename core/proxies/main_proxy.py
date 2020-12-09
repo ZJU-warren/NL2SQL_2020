@@ -38,15 +38,15 @@ class MainProxy:
         self.test_data_holder = None
 
         if self.mode:
-            self.flag = 'where-suffix'
+            self.flag = 'where-prefix'
             self.load_model()
             self.__init_test()
         else:
             self.__init_train()
 #
         # self.select_proxy = SelectProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
-        self.from_proxy = FromProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
-        # self.where_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        # self.from_proxy = FromProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
+        self.where_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
         # self.having_proxy = HavingProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
         # self.groupby_proxy = GroupByProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
         # self.orderby_proxy = OrderByProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
@@ -56,8 +56,8 @@ class MainProxy:
     def run(self):
         if self.mode:
             # self.select_proxy.predict()
-            self.from_proxy.predict()
-            # self.where_proxy.predict()
+            # self.from_proxy.predict()
+            self.where_proxy.predict()
             # self.having_proxy.predict()
             # self.groupby_proxy.predict()#
             # self.orderby_proxy.predict()
@@ -65,11 +65,11 @@ class MainProxy:
             # self.combination_proxy.predict()
 
         else:
-            self.flag = 'from-suffix'
+            self.flag = 'where-prefix'
             for _ in range(self.epoch):
                 # self.select_proxy.run_a_epoch()
-                self.from_proxy.run_a_epoch()
-                # self.where_proxy.run_a_epoch()
+                # self.from_proxy.run_a_epoch()
+                self.where_proxy.run_a_epoch()
                 # self.having_proxy.run_a_epoch()
                 # self.groupby_proxy.run_a_epoch()
                 # self.orderby_proxy.run_a_epoch()

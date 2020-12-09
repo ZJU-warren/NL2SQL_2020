@@ -78,12 +78,11 @@ class ModuleProxy:
 
     def predict(self, top=1, keyword=None, target_path=None, extra=None):
         y_pd_score = []
-        print('%s total : total = %d' % (self.__class__.__name__, self.total))
 
         i = 0
         while True:
-            start = i * 10
-            end = min((i + 1) * 10, self.total)
+            start = i * 20
+            end = min((i + 1) * 20, self.total)
 
             if extra is None:
                 score = self.target_net(self.test_data_holder,
@@ -94,12 +93,8 @@ class ModuleProxy:
 
             if self.header_mask is not None:
                 y_pd_score.extend(score * self.header_mask[start: end].data.cpu().numpy())
-                # print(self.__class__.__name__)
             else:
                 y_pd_score.extend(score)
-
-            if start % 100 == 0:
-                print("predict: [%d, %d]" % (start, end))
 
             if end == self.total:
                 break

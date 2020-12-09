@@ -38,12 +38,12 @@ class MainProxy:
         self.test_data_holder = None
 
         if self.mode:
-            self.flag = 'where-suffix'
+            # self.flag = 'where-eq'
             self.load_model()
             self.__init_test()
         else:
             self.__init_train()
-
+#
         self.select_proxy = SelectProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
         self.from_proxy = FromProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
         self.where_proxy = WhereProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
@@ -54,19 +54,18 @@ class MainProxy:
         self.combination_proxy = CombinationProxy(self.base_net, self.mode, self.train_data_holder, self.valid_data_holder, self.test_data_holder)
 
     def run(self):
-
         if self.mode:
             # self.select_proxy.predict()
             # self.from_proxy.predict()
             self.where_proxy.predict()
             # self.having_proxy.predict()
-            # self.groupby_proxy.predict()
+            # self.groupby_proxy.predict()#
             # self.orderby_proxy.predict()
             # self.limit_proxy.predict()
             # self.combination_proxy.predict()
 
         else:
-            self.flag = 'where-suffix'
+            self.flag = 'where-eq'
             for _ in range(self.epoch):
                 # self.select_proxy.run_a_epoch()
                 # self.from_proxy.run_a_epoch()

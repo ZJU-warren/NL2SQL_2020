@@ -11,8 +11,8 @@ import numpy as np
 
 
 class WhereCondComNetProxy(ModuleProxy):
-    def __init__(self, base_net, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None):
-        super(WhereCondComNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder)
+    def __init__(self, base_net, predict_mode=False, train_data_holder=None, valid_data_holder=None, test_data_holder=None, thres=0.4):
+        super(WhereCondComNetProxy, self).__init__(predict_mode, train_data_holder, valid_data_holder, test_data_holder, thres=thres)
         self._init_env(base_net, CondComNet, 'Where', 'com', True)
 
     def _init_train(self, base_net, target_net, part_name, file_name, tensor=False):

@@ -160,22 +160,18 @@ class ModuleProxy:
 
             if self.start == 0:
                 break
-            #
-            # if step == 5: # !!!!!
-            #     break
             
-        print("____________thre %f", self.thres)
-        # if self.last_acc > 0.8 and self.best_acc < self.last_acc:
-        if self.last_acc > self.thres / 2 and self.best_acc < self.last_acc:
-            print('=============== save the best model [%s] with acc %f ================='
-                  % (self.__class__.__name__, self.last_acc))
-            self.save_model()
-            self.best_acc = self.last_acc
-            # self.load_model()
+        # print("____________thre %f", self.thres)
+        # # if self.last_acc > 0.8 and self.best_acc < self.last_acc:
+        # if self.last_acc > 0.4 and self.best_acc < self.last_acc:
+        print('=============== save the best model [%s] with acc %f ================='
+              % (self.__class__.__name__, self.last_acc))
+        self.save_model()
+        self.best_acc = self.last_acc
+        # self.load_model()
 
-            # if self.last_acc > self.thres:
-            if self.last_acc > self.thres:
-                self.need_train = False
+            #if self.last_acc > self.thres:
+        self.need_train = False
 
         print('- [%s] with loss %f and acc %f in the last epoch.'
               % (self.__class__.__name__, self.avg_loss, self.last_acc))

@@ -38,7 +38,7 @@ class MainProxy:
         self.test_data_holder = None
 
         if self.mode:
-            self.flag = 'from-prefix-suffix'
+            self.flag = 'where-suffix'
             self.load_model()
             self.__init_test()
         else:
@@ -65,10 +65,10 @@ class MainProxy:
             # self.combination_proxy.predict()
 
         else:
-            self.flag = 'where-eq'
+            self.flag = 'from-suffix'
             for _ in range(self.epoch):
                 # self.select_proxy.run_a_epoch()
-                # self.from_proxy.run_a_epoch()
+                self.from_proxy.run_a_epoch()
                 # self.where_proxy.run_a_epoch()
                 # self.having_proxy.run_a_epoch()
                 # self.groupby_proxy.run_a_epoch()

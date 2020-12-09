@@ -49,12 +49,12 @@ class FromProxy:
         #                                       test_data_holder=self.test_data_holder)
         # self.n_cond_proxy.predict()
 
-        self.cond_prefix_proxy \
-            = FromCondPrefixNetProxy(self.base_net, predict_mode=self.mode,
-                                train_data_holder=self.train_data_holder,
-                                valid_data_holder=self.valid_data_holder,
-                                test_data_holder=self.test_data_holder)
-        self.cond_prefix_proxy.predict()
+        # self.cond_prefix_proxy \
+        #     = FromCondPrefixNetProxy(self.base_net, predict_mode=self.mode,
+        #                         train_data_holder=self.train_data_holder,
+        #                         valid_data_holder=self.valid_data_holder,
+        #                         test_data_holder=self.test_data_holder)
+        # self.cond_prefix_proxy.predict()
 
         self.cond_suffix_proxy \
             = FromCondSuffixNetProxy(self.base_net, predict_mode=self.mode,

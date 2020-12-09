@@ -120,15 +120,16 @@ class DataPreprocessor:
         query_with_db_info = []
         question_id = []
         db_name = []
+        cnt = 0
         for each in data:
             temp = each['question'] + db_info[each['db_name']]
             if len(temp) > 505:
                 temp = '[unused1]'.join(temp[:505].split('[unused1]')[: -1])
-
+                cnt += 1
             query_with_db_info.append(temp)
             question_id.append(each['question_id'])
             db_name.append(each['db_name'])
-
+        print('cnt = %d', cnt)
         # 3. generate the tokens
         tokens = DataPreprocessor.tokenizer(query_with_db_info,
                                             padding=True, truncation=True, max_length=512, return_tensors="pt")
